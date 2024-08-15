@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MFATools", "MFATools.csproj", "{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+		RelWithDebInfo|Any CPU = RelWithDebInfo|Any CPU
+		RelWithDebInfo|ARM64 = RelWithDebInfo|ARM64
+		RelWithDebInfo|x64 = RelWithDebInfo|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Debug|ARM64.Build.0 = Debug|ARM64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Debug|x64.ActiveCfg = Debug|x64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Debug|x64.Build.0 = Debug|x64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Release|ARM64.ActiveCfg = Release|ARM64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Release|ARM64.Build.0 = Release|ARM64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Release|x64.ActiveCfg = Release|x64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.Release|x64.Build.0 = Release|x64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.RelWithDebInfo|Any CPU.ActiveCfg = RelWithDebInfo|Any CPU
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.RelWithDebInfo|Any CPU.Build.0 = RelWithDebInfo|Any CPU
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.RelWithDebInfo|ARM64.ActiveCfg = RelWithDebInfo|ARM64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.RelWithDebInfo|ARM64.Build.0 = RelWithDebInfo|ARM64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{8BD71199-73CF-4E2E-A78A-CEF20137E3CC}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+	EndGlobalSection
+EndGlobal

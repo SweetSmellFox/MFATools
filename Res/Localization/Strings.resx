@@ -1,0 +1,358 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata"
+                id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" use="required" type="xsd:string"/>
+                            <xsd:attribute name="xml:space" use="required" fixed="preserve"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <!-- 添加以下资源项 -->
+    <data name="AppTitle" xml:space="preserve">
+        <value>Maa框架任务管理器</value>
+    </data>
+    <data name="TabADB" xml:space="preserve">
+        <value>ADB</value>
+    </data>
+    <data name="TabWin32" xml:space="preserve">
+        <value>Win32</value>
+    </data>
+    <data name="TooltipRefresh" xml:space="preserve">
+        <value>刷新</value>
+    </data>
+    <data name="TooltipSettings" xml:space="preserve">
+        <value>设置</value>
+    </data>
+    <data name="TaskList" xml:space="preserve">
+        <value>任务列表：</value>
+    </data>
+    <data name="SelectAll" xml:space="preserve">
+        <value>全选</value>
+    </data>
+    <data name="DeselectAll" xml:space="preserve">
+        <value>全部不选</value>
+    </data>
+    <data name="EditTask" xml:space="preserve">
+        <value>编辑任务</value>
+    </data>
+    <data name="TaskSettings" xml:space="preserve">
+        <value>任务设置</value>
+    </data>
+    <data name="StartTask" xml:space="preserve">
+        <value>启动任务</value>
+    </data>
+    <data name="StopTask" xml:space="preserve">
+        <value>停止任务</value>
+    </data>
+    <data name="TooltipDragLabel" xml:space="preserve">
+        <value>标签顺序可拖动</value>
+    </data>
+
+
+    <data name="DuplicateTaskError" xml:space="preserve">
+  <value>Pipeline文件中存在重复的任务名称:"{0}"！</value>
+</data>
+    <data name="PipelineLoadError" xml:space="preserve">
+  <value>载入Pipeline文件时出现错误: {0}</value>
+</data>
+    <data name="TaskNotFoundError" xml:space="preserve">
+  <value>Pipeline文件中任务的{0}使用了不存在的任务:"{1}"！</value>
+</data>
+    <data name="TaskListHeader" xml:space="preserve">
+  <value>任务列表：</value>
+</data>
+    <data name="EditTaskTooltip" xml:space="preserve">
+  <value>编辑任务</value>
+</data>
+    <data name="ResourceOption" xml:space="preserve">
+  <value>资源</value>
+</data>
+    <data name="ThemeOption" xml:space="preserve">
+  <value>颜色主题</value>
+</data>
+    <data name="LanguageOption" xml:space="preserve">
+  <value>语言(Language)</value>
+</data>
+    <data name="TouchModeOption" xml:space="preserve">
+  <value>触控模式</value>
+</data>
+    <data name="CaptureModeOption" xml:space="preserve">
+  <value>捕获方式</value>
+</data>
+    <data name="RepeatOption" xml:space="preserve">
+  <value>重复次数</value>
+</data>
+    <data name="WindowDetectionStarted" xml:space="preserve">
+  <value>开始搜索窗口!</value>
+</data>
+    <data name="EmulatorDetectionStarted" xml:space="preserve">
+  <value>开始搜索模拟器!</value>
+</data>
+    <data name="NoEmulatorFound" xml:space="preserve">
+  <value>未找到模拟器!</value>
+</data>
+    <data name="NoWindowFound" xml:space="preserve">
+  <value>未找到窗口!</value>
+</data>
+    <data name="WindowSelectionMessage" xml:space="preserve">
+  <value>已选择窗口:{0}</value>
+</data>
+    <data name="EmulatorSelectionMessage" xml:space="preserve">
+  <value>已选择模拟器:{0}</value>
+</data>
+    <data name="AdbTouchMode" xml:space="preserve">
+  <value>触控模式:</value>
+</data>
+    <data name="AdbCaptureMode" xml:space="preserve">
+  <value>捕获模式:</value>
+</data>
+    <data name="TaskStackError" xml:space="preserve">
+  <value>识别{0}时发生错误: {1}</value>
+</data>
+    <data name="LightColor" xml:space="preserve">
+        <value>浅色</value>
+    </data>
+    <data name="DarkColor" xml:space="preserve">
+        <value>深色</value>
+    </data>
+    <data name="EditTaskDialog_Title" xml:space="preserve">
+    <value>任务编辑器</value>
+  </data>
+    <data name="Cut" xml:space="preserve">
+    <value>剪切</value>
+  </data>
+    <data name="Copy" xml:space="preserve">
+    <value>复制</value>
+  </data>
+    <data name="PasteAbove" xml:space="preserve">
+    <value>粘贴到上方</value>
+  </data>
+    <data name="PasteBelow" xml:space="preserve">
+    <value>粘贴到下方</value>
+  </data>
+    <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+    <data name="Paste" xml:space="preserve">
+    <value>粘贴</value>
+  </data>
+    <data name="EditTaskDialog_Header" xml:space="preserve">
+    <value>任务编辑器</value>
+  </data>
+    <data name="EditTaskDialog_PipelineFileName_Placeholder" xml:space="preserve">
+    <value>Pipeline文件名称</value>
+  </data>
+    <data name="EditTaskDialog_Load_Tooltip" xml:space="preserve">
+    <value>导入Pipeline文件</value>
+  </data>
+    <data name="EditTaskDialog_SavePipeline_Tooltip" xml:space="preserve">
+    <value>保存Pipeline文件</value>
+  </data>
+    <data name="EditTaskDialog_TaskList_Label" xml:space="preserve">
+    <value>任务列表：</value>
+  </data>
+    <data name="EditTaskDialog_AddTask_Tooltip" xml:space="preserve">
+    <value>添加任务</value>
+  </data>
+    <data name="EditTaskDialog_ClearTask_Tooltip" xml:space="preserve">
+    <value>清空任务</value>
+  </data>
+    <data name="EditTaskDialog_TaskName_Title" xml:space="preserve">
+    <value>任务名称:</value>
+  </data>
+    <data name="EditTaskDialog_RecognitionText_Tooltip" xml:space="preserve">
+    <value>文字识别</value>
+  </data>
+    <data name="EditTaskDialog_ColorExtraction_Tooltip" xml:space="preserve">
+    <value>取色</value>
+  </data>
+    <data name="EditTaskDialog_Swipe_Tooltip" xml:space="preserve">
+    <value>滑动</value>
+  </data>
+    <data name="EditTaskDialog_Screenshot_Tooltip" xml:space="preserve">
+    <value>裁剪图片</value>
+  </data>
+    <data name="EditTaskDialog_SelectionRegion_Tooltip" xml:space="preserve">
+    <value>选择区域</value>
+  </data>
+    <data name="EditTaskDialog_AddAttribute_Tooltip" xml:space="preserve">
+    <value>添加属性</value>
+  </data>
+    <data name="EditTaskDialog_ClearAttribute_Tooltip" xml:space="preserve">
+    <value>清空属性</value>
+  </data>
+    <data name="EditTaskDialog_SaveTask_Button" xml:space="preserve">
+    <value>保存任务</value>
+  </data>
+    <data name="EditTaskDialog_ShowChart_Button" xml:space="preserve">
+        <value>流程图</value>
+    </data>
+    <data name="Quit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+    <data name="SaveSuccessMessage" xml:space="preserve">
+    <value>保存任务成功!</value>
+</data>
+    <data name="SaveFailureMessage" xml:space="preserve">
+    <value>保存任务失败!</value>
+</data>
+    <data name="DuplicateTaskNameError" xml:space="preserve">
+    <value>任务列表中已存在命名为"{0}"的任务</value>
+</data>
+    <data name="LoadPipelineTitle" xml:space="preserve">
+    <value>选择 Pipeline 文件</value>
+</data>
+    <data name="LoadPipelineErrorMessage" xml:space="preserve">
+    <value>Pipeline文件加载或解析失败: {0}</value>
+</data>
+    <data name="SavePipelineSuccess" xml:space="preserve">
+    <value>保存成功！</value>
+</data>
+    <data name="SavePipelineWarning" xml:space="preserve">
+    <value>任务列表中存在相同命名的任务!</value>
+</data>
+    <data name="ClipboardDataError" xml:space="preserve">
+    <value>目前剪贴板中数据不可转换为文本</value>
+</data>
+    <data name="Warning_CannotConnect" xml:space="preserve">
+    <value>无法连接至{0}</value>
+</data>
+    <data name="Simulator" xml:space="preserve">
+    <value>模拟器</value>
+</data>
+    <data name="Window" xml:space="preserve">
+    <value>窗口</value>
+</data>
+    <data name="ConnectingTo" xml:space="preserve">
+    <value>正在连接至{0}......</value>
+</data>
+    <data name="InitInstanceFailed" xml:space="preserve">
+    <value>初始化MAA实例失败，发生连接错误或资源文件损坏，请参阅日志.</value>
+</data>
+    <data name="InstanceInitFailedLog" xml:space="preserve">
+    <value>MAA实例初始化失败</value>
+</data>
+    <data name="TaskStart" xml:space="preserve">
+    <value>开始任务: {0}</value>
+</data>
+    <data name="Stopping" xml:space="preserve">
+    <value>正在停止......</value>
+</data>
+    <data name="TaskStopped" xml:space="preserve">
+    <value>任务已中止</value>
+</data>
+    <data name="TaskAbandoned" xml:space="preserve">
+    <value>已放弃本次任务</value>
+</data>
+    <data name="TaskCompleted" xml:space="preserve">
+    <value>任务已完成</value>
+</data>
+    <data name="TaskAllCompleted" xml:space="preserve">
+    <value>已完成全部任务</value>
+</data>
+    <data name="StoppingFailed" xml:space="preserve">
+    <value>停止任务失败</value>
+</data>
+    <data name="NoTaskToStop" xml:space="preserve">
+    <value>当前没有可结束的任务!</value>
+</data>
+    <data name="LoadingResources" xml:space="preserve">
+    <value>正在载入资源</value>
+</data>
+    <data name="LoadResourcesFailed" xml:space="preserve">
+    <value>资源加载失败！</value>
+</data>
+    <data name="InitResourcesSuccess" xml:space="preserve">
+    <value>载入资源成功</value>
+</data>
+    <data name="LoadingController" xml:space="preserve">
+    <value>正在初始化控制器</value>
+</data>
+    <data name="ConnectingSimulatorOrWindow" xml:space="preserve">
+    <value>连接{0}时发生错误！</value>
+</data>
+    <data name="InitControllerFailed" xml:space="preserve">
+    <value>初始化控制器时发生错误！</value>
+</data>
+    <data name="InitControllerSuccess" xml:space="preserve">
+    <value>初始化控制器成功</value>
+</data>
+    <data name="RegisteringCustomRecognizer" xml:space="preserve">
+    <value>正在注册自定义识别器</value>
+</data>
+    <data name="RegisteringCustomAction" xml:space="preserve">
+    <value>正在注册自定义行动</value>
+</data>
+    <data name="RegisterCustomRecognizer" xml:space="preserve">
+    <value>注册自定义Recognizer:{0}</value>
+</data>
+    <data name="RegisterCustomAction" xml:space="preserve">
+    <value>注册自定义Action:{0}</value>
+</data>
+    <data name="EditAttributeDialogTitle" xml:space="preserve">
+    <value>属性编辑器</value>
+</data>
+    <data name="LabelPropertyType" xml:space="preserve">
+    <value>属性类型:</value>
+</data>
+    <data name="ButtonSave" xml:space="preserve">
+    <value>保存</value>
+</data>
+    <data name="ButtonCancel" xml:space="preserve">
+    <value>取消</value>
+</data>
+    <data name="ButtonClose" xml:space="preserve">
+    <value>关闭</value>
+</data>
+    <data name="ButtonAdd" xml:space="preserve">
+        <value>添加</value>
+    </data>
+    <data name="ColorPickerTitle" xml:space="preserve">
+    <value>取色器</value>
+</data>
+    <data name="ImageBrowserTitle" xml:space="preserve">
+    <value>图片浏览器</value>
+</data>
+    <data name="TextRecognizerTitle" xml:space="preserve">
+    <value>文字识别器</value>
+</data>
+    <data name="RegionSelectorTitle" xml:space="preserve">
+    <value>区域选择器</value>
+</data>
+    <data name="SliderControlTitle" xml:space="preserve">
+    <value>滑动获取器</value>
+</data>
+    <data name="WorkflowDiagramTitle" xml:space="preserve">
+    <value>任务流程图</value>
+</data>
+
+</root>
