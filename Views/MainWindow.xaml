@@ -13,8 +13,8 @@
                        xmlns:engine="https://github.com/XAMLMarkupExtensions/WPFLocalizationExtension"
                        engine:ResxLocalizationProvider.DefaultAssembly="MFATools"
                        engine:ResxLocalizationProvider.DefaultDictionary="Strings"
-                       mc:Ignorable="d"
-                       Title="{lex:Loc AppTitle}" Height="520" Width="800" MinWidth="400" MinHeight="205"
+                       mc:Ignorable="d" 
+                       Title="{lex:Loc AppTitle}" Height="520" Width="800" MinWidth="410" MinHeight="205"
                        WindowStartupLocation="CenterScreen" WindowStyle="None"
                        Background="Transparent" AllowsTransparency="True"
                        WindowState="Normal">
@@ -42,7 +42,7 @@
                             <RowDefinition Height="Auto"></RowDefinition>
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0 ">
-                            <Image VerticalAlignment="Center" DockPanel.Dock="Left" Source="/../Assets/Icons/logo.ico"
+                            <Image VerticalAlignment="Center" DockPanel.Dock="Left" Source="/../logo.ico"
                                    Height="20" Width="20">
 
                             </Image>
@@ -100,18 +100,18 @@
                     </hc:SimpleStackPanel>
                     <Grid Grid.Row="1" ClipToBounds="False" Margin="15 0 15 0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="20"></RowDefinition>
+                            <RowDefinition Height="25"></RowDefinition>
                             <RowDefinition Height="*"></RowDefinition>
                             <RowDefinition Height="15"></RowDefinition>
                         </Grid.RowDefinitions>
                         <Grid Grid.Row="0" VerticalAlignment="Top"
-                              Margin="0,0,10,4">
+                              Margin="0,5,10,4">
 
 
-                            <TextBlock VerticalAlignment="Center" Margin="5 5 0 0" Text="工具："
+                            <TextBlock VerticalAlignment="Center" Margin="5 0 0 0" Text="工具："
                                        Foreground="{StaticResource GrayColor4}">
                             </TextBlock>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
                                 <Button ToolTip="{lex:Loc EditTaskDialog_RecognitionText_Tooltip}" Width="15"
                                         Height="15"
                                         Style="{StaticResource textBoxButton}"

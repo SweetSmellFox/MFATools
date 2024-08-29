@@ -17,7 +17,7 @@
 
     <!-- Info -->
     <PropertyGroup>
-        <ApplicationIcon>Assets\Icons\logo.ico</ApplicationIcon>
+        <ApplicationIcon>logo.ico</ApplicationIcon>
         <RootNamespace>MFATools</RootNamespace>
         <AssemblyName>MFATools</AssemblyName>
         <ProductName>MFATools</ProductName>
@@ -36,7 +36,7 @@
         <ApplicationVersion>1.1.0</ApplicationVersion>
         <Version>1.1</Version>
         <FileVersion>0.0.1</FileVersion>
-        <AssemblyVersion>1.2</AssemblyVersion>
+        <AssemblyVersion>1.2.1</AssemblyVersion>
         <InformationalVersion>0.0.1</InformationalVersion>
     </PropertyGroup>
   
@@ -74,7 +74,6 @@
 	
     <ItemGroup>
         <None Remove="Assets\Icons\logo.ico" />
-        <Resource Include="Assets\Icons\logo.ico" />
         <None Remove="Assets\Icons\maa-logo_128x128.png" />
     </ItemGroup>
 
@@ -157,5 +156,12 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Strings.resx</DependentUpon>
       </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="logo.ico" />
+      <Resource Include="logo.ico">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
     </ItemGroup>
 </Project>
