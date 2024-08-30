@@ -254,6 +254,7 @@ namespace MFATools.Views
                 Growl.Info(string.Format(LocExtension.GetLocalizedValue<string>("WindowSelectionMessage"),
                     window.Name));
                 MaaProcessor.Config.Win32.HWnd = window.Handle;
+                MaaProcessor.Instance?.SetCurrentInstance(null);
             }
             else if (deviceComboBox.SelectedItem is DeviceInfo device)
             {
@@ -262,6 +263,7 @@ namespace MFATools.Views
                 MaaProcessor.Config.Adb.Adb = device.AdbPath;
                 MaaProcessor.Config.Adb.AdbAddress = device.AdbSerial;
                 MaaProcessor.Config.Adb.AdbConfig = device.AdbConfig;
+                MaaProcessor.Instance?.SetCurrentInstance(null);
                 DataSet.SetData("Adb", device);
             }
         }
