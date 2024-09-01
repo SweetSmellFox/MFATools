@@ -178,9 +178,5 @@ public partial class SelectionRegionDialog : CustomWindow
         IsRoi = SelectType.SelectedIndex == 0;
         Close();
     }
-
-    protected override void Close(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
+    
 }

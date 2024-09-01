@@ -10,7 +10,8 @@ public class MaaInterfaceSelectOptionConverter : JsonConverter
         return objectType == typeof(object);
     }
 
-    public override  object? ReadJson(JsonReader reader, Type objectType,  object? existingValue, JsonSerializer serializer)
+    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
+        JsonSerializer serializer)
     {
         JToken token = JToken.Load(reader);
         switch (token.Type)
@@ -34,6 +35,15 @@ public class MaaInterfaceSelectOptionConverter : JsonConverter
                 }
 
                 return token.ToObject<List<MaaInterface.MaaInterfaceSelectOption>>(serializer);
+            case JTokenType.String:
+                string? oName = token.ToObject<string>(serializer);
+                return new List<MaaInterface.MaaInterfaceSelectOption>
+                {
+                    new()
+                    {
+                        name = oName ?? ""
+                    }
+                };
         }
 
         throw new JsonSerializationException("Invalid JSON format for MaaInterfaceSelectOptionConverter.");
@@ -43,7 +53,7 @@ public class MaaInterfaceSelectOptionConverter : JsonConverter
     {
         JArray array = new JArray();
 
-        if (value != null && value is List<MaaInterface.MaaInterfaceSelectOption> selectOptions)
+        if (value is List<MaaInterface.MaaInterfaceSelectOption> selectOptions)
         {
             foreach (var option in selectOptions)
             {

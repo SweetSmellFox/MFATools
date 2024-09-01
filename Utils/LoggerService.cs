@@ -2,10 +2,9 @@
 
 namespace MFATools.Utils;
 
-public class LoggerService
+public static class LoggerService
 {
     private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-    private static LoggerService Logger = new();
 
     public static void LogInfo(string message)
     {

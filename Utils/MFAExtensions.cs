@@ -1,6 +1,6 @@
-﻿using System.Windows;
+﻿using System.Collections.ObjectModel;
+using System.Windows;
 using HandyControl.Controls;
-using WPFLocalizeExtension.Deprecated.Extensions;
 using WPFLocalizeExtension.Engine;
 using WPFLocalizeExtension.Extensions;
 
@@ -32,11 +32,11 @@ public static class MFAExtensions
             ) ?? new Dictionary<TKey, TaskModel>();
     }
 
-    public static void BindLocalization(this UIElement control, string resourceKey, DependencyProperty? property = null)
+    public static void BindLocalization(this FrameworkElement control, string resourceKey,
+        DependencyProperty? property = null)
     {
-        if (property == null)
-            property = InfoElement.TitleProperty;
-        var locExtension = new LocTextExtension(resourceKey);
+        property ??= InfoElement.TitleProperty;
+        var locExtension = new LocExtension(resourceKey);
         locExtension.SetBinding(control, property);
     }
 
@@ -58,5 +58,13 @@ public static class MFAExtensions
     public static string FormatWith(this string format, params object?[] args)
     {
         return string.Format(format, args);
+    }
+
+    public static void AddRange<T>(this ObservableCollection<T>? collection, IEnumerable<T>? items)
+    {
+        if (collection == null || items == null)
+            return;
+        foreach (var item in items)
+            collection.Add(item);
     }
 }

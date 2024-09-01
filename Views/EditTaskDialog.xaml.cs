@@ -22,12 +22,12 @@ using Path = System.Windows.Shapes.Path;
 
 namespace MFATools.Views;
 
-public partial class EditTaskDialog 
+public partial class EditTaskDialog
 {
     private List<TaskModel> tasks;
     public EditTaskDialogViewModel? Data;
 
-    public EditTaskDialog() 
+    public EditTaskDialog()
     {
         InitializeComponent();
         tasks = new List<TaskModel>();
@@ -36,7 +36,7 @@ public partial class EditTaskDialog
             Data.Dialog = this;
     }
 
-    protected override void Close(object sender, RoutedEventArgs e)
+    protected override void Close(object? sender = null, RoutedEventArgs? e = null)
     {
         if (MainWindow.Data != null)
             MainWindow.Data.Idle = true;
@@ -601,7 +601,7 @@ public partial class EditTaskDialog
                             {
                                 if (imageDialog.Output != null)
                                     lli.Add(imageDialog.Output);
-                                
+
                                 attribute.Attribute = new Attribute()
                                 {
                                     Key = "roi", Value = lli

@@ -54,9 +54,9 @@ namespace MFATools.Views
 
         private bool InitializeData()
         {
-            DataSet.Data = JSONHelper.ReadFromConfigJsonFile("config", new Dictionary<string, object>());
+            DataSet.Data = JsonHelper.ReadFromConfigJsonFile("config", new Dictionary<string, object>());
             MaaInterface.Instance =
-                JSONHelper.ReadFromJsonFilePath(MaaProcessor.Resource, "interface", new MaaInterface());
+                JsonHelper.ReadFromJsonFilePath(MaaProcessor.Resource, "interface", new MaaInterface());
             if (MaaInterface.Instance != null)
             {
                 Data?.TaskItemViewModels.Clear();
@@ -109,6 +109,16 @@ namespace MFATools.Views
         private void btnMinimize_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
+        }
+
+        private void ToggleWindowTopMost(object sender, RoutedEventArgs e)
+        {
+            if (Data == null) return;
+            Topmost = !Topmost;
+            if (Topmost)
+                Data.WindowTopMostButtonForeground = FindResource("PrimaryBrush") as Brush ?? Brushes.DarkGray;
+            else
+                Data.WindowTopMostButtonForeground = FindResource("ActionIconColor") as Brush ?? Brushes.DarkGray;
         }
 
         private void TaskList_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -400,23 +410,17 @@ namespace MFATools.Views
             };
         }
 
-        /// <summary>
-        /// 向日志框中添加文本，可以包含换行符。
-        /// </summary>
-        /// <param name="text">要添加的文本</param>
-        public void AppendLog(string text)
-        {
-            LogTextBox.AppendText(text + Environment.NewLine);
-            LogTextBox.ScrollToEnd();
-        }
 
         /// <summary>
         /// 向日志框中添加文本，可以包含换行符。
         /// </summary>
         /// <param name="content">要添加的内容</param>
-        public void AppendLog(object? content)
+        public void AppendLog(Attribute? content)
         {
-            AppendLog(content?.ToString() ?? string.Empty);
+            TagContainer.Items.Add(new AttributeTag(content)
+            {
+                Margin = new Thickness(2)
+            });
         }
 
         /// <summary>
@@ -424,7 +428,7 @@ namespace MFATools.Views
         /// </summary>
         public void ClearLog()
         {
-            LogTextBox.Clear();
+            TagContainer.Items.Clear();
         }
 
         private void SelectionRegion(object sender, RoutedEventArgs e)
@@ -435,14 +439,9 @@ namespace MFATools.Views
                 SelectionRegionDialog selectionRegionDialog = new SelectionRegionDialog(image);
                 if (selectionRegionDialog.ShowDialog() == true)
                 {
-                    if (selectionRegionDialog.IsRoi)
-                    {
-                        AppendLog(new Attribute("roi", selectionRegionDialog.Output));
-                    }
-                    else
-                    {
-                        AppendLog(new Attribute("target", selectionRegionDialog.Output));
-                    }
+                    AppendLog(selectionRegionDialog.IsRoi
+                        ? new Attribute("roi", selectionRegionDialog.Output)
+                        : new Attribute("target", selectionRegionDialog.Output));
                 }
             }
         }
@@ -509,6 +508,10 @@ namespace MFATools.Views
         private void ClearLog(object sender, RoutedEventArgs e)
         {
             ClearLog();
+        }
+
+        private void Copy(object sender, RoutedEventArgs e)
+        {
         }
     }
 }

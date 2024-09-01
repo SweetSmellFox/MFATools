@@ -3,7 +3,7 @@ using HandyControl.Data;
 
 namespace MFATools.Utils;
 
-public class Growls
+public static class Growls
 {
     public static void Warning(string message, string token = "")
     {

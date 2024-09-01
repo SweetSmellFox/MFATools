@@ -173,9 +173,4 @@ public partial class SwipeDialog : CustomWindow
         _arrowHead?.Points.Add(p1);
         _arrowHead?.Points.Add(p2);
     }
-
-    protected override void Close(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
 }

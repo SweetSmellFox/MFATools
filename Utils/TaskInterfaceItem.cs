@@ -25,5 +25,14 @@ public class TaskInterfaceItem
         };
 
         return JsonConvert.SerializeObject(this, settings);
+    }    
+    
+    /// <summary>
+    /// Creates a deep copy of the current <see cref="TaskInterfaceItem"/> instance.
+    /// </summary>
+    /// <returns>A new <see cref="TaskInterfaceItem"/> instance that is a deep copy of the current instance.</returns>
+    public TaskInterfaceItem Clone()
+    {
+        return JsonConvert.DeserializeObject<TaskInterfaceItem>(ToString()) ?? new TaskInterfaceItem();
     }
 }

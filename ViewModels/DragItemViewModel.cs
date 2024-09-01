@@ -45,7 +45,7 @@ public class DragItemViewModel : ObservableObject
             value ??= false;
             if (InterfaceItem != null)
                 InterfaceItem.check = IsChecked;
-            JSONHelper.WriteToJsonFilePath(MaaProcessor.Resource, "interface", MaaInterface.Instance);
+            JsonHelper.WriteToJsonFilePath(MaaProcessor.Resource, "interface", MaaInterface.Instance);
         }
     }
 

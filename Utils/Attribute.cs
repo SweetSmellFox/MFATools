@@ -17,24 +17,28 @@ public class Attribute
     public Attribute()
     {
     }
-    
+
+    static string ConvertListToString(List<List<int>> listOfLists)
+    {
+        var formattedLists = listOfLists
+            .Select(innerList => $"[{string.Join(",", innerList)}]");
+        return string.Join(",", formattedLists);
+    }
+
     public override string ToString()
     {
+        if (Value is List<List<int>> lli)
+            return $"\"{Key}\" : [{ConvertListToString(lli)}]";
+
         if (Value is List<int> li)
-        {
             return $"\"{Key}\" : [{string.Join(",", li)}]";
-        }
-        else if (Value is List<string> ls)
-        {
+
+        if (Value is List<string> ls)
             return $"\"{Key}\" : [{string.Join(",", ls)}]";
-        }
-        else if (Value is string s)
-        {
+
+        if (Value is string s)
             return $"\"{Key}\" : \"{s}\"";
-        }
-        else
-        {
-            return $"\"{Key}\" : {Value}";
-        }
+
+        return $"\"{Key}\" : {Value}";
     }
 }

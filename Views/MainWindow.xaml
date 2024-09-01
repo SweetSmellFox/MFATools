@@ -11,9 +11,10 @@
                        xmlns:converters="clr-namespace:MFATools.Utils.Converters"
                        xmlns:lex="http://wpflocalizeextension.codeplex.com" IsResizable="True"
                        xmlns:engine="https://github.com/XAMLMarkupExtensions/WPFLocalizationExtension"
+                       xmlns:utils="clr-namespace:MFATools.Utils"
                        engine:ResxLocalizationProvider.DefaultAssembly="MFATools"
                        engine:ResxLocalizationProvider.DefaultDictionary="Strings"
-                       mc:Ignorable="d" 
+                       mc:Ignorable="d"
                        Title="{lex:Loc AppTitle}" Height="520" Width="800" MinWidth="410" MinHeight="205"
                        WindowStartupLocation="CenterScreen" WindowStyle="None"
                        Background="Transparent" AllowsTransparency="True"
@@ -24,6 +25,25 @@
     <controls:CustomWindow.Resources>
         <converters:SubtractConverter x:Key="SubtractConverter" />
         <converters:CustomIsEnabledConverter x:Key="CustomIsEnabledConverter" />
+        <DataTemplate x:Key="DeviceInfoTemplate">
+            <TextBlock>
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0} ({1})">
+                        <Binding Path="Name" />
+                        <Binding Path="AdbSerial" />
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+        </DataTemplate>
+        <!-- DataTemplate for WindowInfo -->
+        <DataTemplate x:Key="WindowInfoTemplate">
+            <TextBlock Text="{Binding Name}" />
+        </DataTemplate>
+
+        <!-- DataTemplateSelector -->
+        <utils:DeviceWindowTemplateSelector x:Key="DeviceWindowTemplateSelector"
+                                            DeviceInfoTemplate="{StaticResource DeviceInfoTemplate}"
+                                            WindowInfoTemplate="{StaticResource WindowInfoTemplate}" />
     </controls:CustomWindow.Resources>
     <Border CornerRadius="8" Background="{DynamicResource SecundaryBackgroundColor}"
             BorderBrush="{DynamicResource GrayColor10}" BorderThickness="1">
@@ -55,23 +75,30 @@
                             </TextBlock>
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" FlowDirection="RightToLeft">
-                            <Button x:Name="btnClose" Style="{StaticResource IconButtonsStyle}"
+                            <Button x:Name="btnClose" Style="{StaticResource IconButtonsStyle}" Width="40"
+                                    ClipToBounds="True"
                                     Content="{DynamicResource close}" Click="btnClose_Click" Tag="IsCloseButton" />
-                            <Button x:Name="btnRestore" Margin="5,0" Click="btnRestore_Click">
+                            <Button x:Name="btnRestore" Margin="5,0" Click="btnRestore_Click" Width="40">
                                 <Button.Style>
                                     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButtonsStyle}">
                                         <Setter Property="Content" Value="{DynamicResource maximize}" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding ElementName=home, Path=WindowState}"
                                                          Value="Maximized">
-                                                <Setter Property="Content" Value="{DynamicResource restore}" />
+                                                <Setter Property="Content"
+                                                        Value="{DynamicResource WindowRestoreGeometry}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Button.Style>
                             </Button>
-                            <Button x:Name="btnMinimize" Style="{DynamicResource IconButtonsStyle}"
+                            <Button x:Name="btnMinimize" Style="{DynamicResource IconButtonsStyle}" Width="40"
                                     Content="{DynamicResource minimize}" Click="btnMinimize_Click" />
+                            <Button x:Name="btnPin" Padding="0 -2 0 0" Width="42"
+                                    Content="📌" Click="ToggleWindowTopMost"
+                                    Style="{StaticResource PushpinButtonStyle}"
+                                    Foreground="{Binding WindowTopMostButtonForeground}">
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -88,8 +115,9 @@
                             <TabItem Header="{lex:Loc TabADB}" x:Name="adbTab"></TabItem>
                             <TabItem Header="{lex:Loc TabWin32}" x:Name="win32Tab"></TabItem>
                         </TabControl>
-                        <ComboBox Width="250" x:Name="deviceComboBox" DisplayMemberPath="Name" Margin="4 0 0 0"
+                        <ComboBox Width="250" x:Name="deviceComboBox" Margin="4 0 0 0"
                                   IsEnabled="{Binding Idle}"
+                                  ItemTemplateSelector="{StaticResource DeviceWindowTemplateSelector}"
                                   SelectionChanged="DeviceComboBox_OnSelectionChanged" />
                         <Button ToolTip="{lex:Loc TooltipRefresh}" Width="20" Height="20" Margin="6 0 2 0"
                                 Style="{StaticResource textBoxButton}"
@@ -111,7 +139,15 @@
                             <TextBlock VerticalAlignment="Center" Margin="5 0 0 0" Text="工具："
                                        Foreground="{StaticResource GrayColor4}">
                             </TextBlock>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" >
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                <Button ToolTip="{lex:Loc Copy}" Width="15"
+                                        Height="15" Visibility="Collapsed"
+                                        Style="{StaticResource textBoxButton}"
+                                        Foreground="{DynamicResource GrayColor4}"
+                                        Click="Copy"
+                                        Padding="0" hc:IconElement.Width="12" Margin="2 0 2 0"
+                                        hc:IconElement.Height="13"
+                                        hc:IconElement.Geometry="{StaticResource copy}" />
                                 <Button ToolTip="{lex:Loc EditTaskDialog_RecognitionText_Tooltip}" Width="15"
                                         Height="15"
                                         Style="{StaticResource textBoxButton}"
@@ -141,7 +177,7 @@
                                         Click="Screenshot"
                                         Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
                                         hc:IconElement.Height="12"
-                                        hc:IconElement.Geometry="{StaticResource ScreenshotsGeometry}" />
+                                        hc:IconElement.Geometry="{StaticResource ImageGeometry}" />
                                 <Button ToolTip="{lex:Loc EditTaskDialog_SelectionRegion_Tooltip}" Width="15"
                                         Height="15"
                                         Style="{StaticResource textBoxButton}"
@@ -162,13 +198,11 @@
                         </Grid>
                         <Border Grid.Row="1" Background="White" CornerRadius="8" Margin="0 4 4 0" Padding="4">
 
-                            <TextBox x:Name="LogTextBox" VerticalContentAlignment="Top"
-                                     IsReadOnly="True" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                     VerticalScrollBarVisibility="Auto" FontSize="15" FontWeight="Bold"
-                                     TextWrapping="Wrap"
-                                     Background="White"
-                                     BorderThickness="0"
-                                     Padding="4" />
+                            <ScrollViewer>
+                                <hc:TagContainer Padding="5" BorderBrush="Transparent" x:Name="TagContainer">
+
+                                </hc:TagContainer>
+                            </ScrollViewer>
 
                         </Border>
 

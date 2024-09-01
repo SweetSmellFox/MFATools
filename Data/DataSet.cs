@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using MFATools.Utils;
+﻿using MFATools.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace MFATools.Data
 {
@@ -8,12 +7,12 @@ namespace MFATools.Data
     {
         public static Dictionary<string, object>? Data = new();
 
-        public static void SetData(string key, object value)
+        public static void SetData(string key, object? value)
         {
-            if (Data == null) return;
+            if (Data == null || value == null) return;
             Data[key] = value; // 如果 key 不存在，将自动添加条目；如果存在，将更新值
 
-            JSONHelper.WriteToConfigJsonFile("config", Data);
+            JsonHelper.WriteToConfigJsonFile("config", Data);
         }
 
 
@@ -24,9 +23,16 @@ namespace MFATools.Data
                 try
                 {
                     // Handle conversion between int and long
-                    if (data is long && typeof(T) == typeof(int))
+                    if (data is long longValue && typeof(T) == typeof(int))
                     {
-                        value = (T)(object)Convert.ToInt32((long)data); // Safe conversion
+                        value = (T)(object)Convert.ToInt32(longValue); // Safe conversion
+                        return true;
+                    }
+
+                    if (data is JArray jArray)
+                    {
+                        // 将 JArray 转换为目标类型
+                        value = jArray.ToObject<T>();
                         return true;
                     }
 
@@ -36,10 +42,11 @@ namespace MFATools.Data
                         return true;
                     }
                 }
-                catch
+                catch (Exception e)
                 {
                     Console.WriteLine("在进行类型转换时发生错误！");
-                    // Handle conversion errors
+                    LoggerService.LogError("在进行类型转换时发生错误!");
+                    LoggerService.LogError(e);
                 }
             }
 
@@ -47,16 +54,21 @@ namespace MFATools.Data
             return false;
         }
 
-        public static T GetData<T>(string key, T defaultValue)
+        public static T? GetData<T>(string key, T defaultValue)
         {
             if (Data?.TryGetValue(key, out var data) == true)
             {
                 try
                 {
-                    // Handle conversion between int and long
-                    if (data is long && typeof(T) == typeof(int))
+                    if (data is long longValue && typeof(T) == typeof(int))
                     {
-                        return (T)(object)Convert.ToInt32((long)data); // Safe conversion
+                        return (T)(object)Convert.ToInt32(longValue);
+                    }
+
+                    if (data is JArray jArray)
+                    {
+                        // 将 JArray 转换为目标类型
+                        return jArray.ToObject<T>();
                     }
 
                     if (data is T t)
@@ -64,10 +76,11 @@ namespace MFATools.Data
                         return t;
                     }
                 }
-                catch
+                catch (Exception e)
                 {
                     Console.WriteLine("在进行类型转换时发生错误！");
-                    // Handle conversion errors
+                    LoggerService.LogError("在进行类型转换时发生错误!");
+                    LoggerService.LogError(e);
                 }
             }
 

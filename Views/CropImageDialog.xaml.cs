@@ -239,9 +239,4 @@ public partial class CropImageDialog : CustomWindow
                 return new PngBitmapEncoder();
         }
     }
-
-    protected override void Close(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
 }

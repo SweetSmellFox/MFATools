@@ -171,10 +171,5 @@ namespace MFATools.Views
             DialogResult = true;
             Close();
         }
-
-        protected override void Close(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
     }
 }

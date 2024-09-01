@@ -216,9 +216,4 @@ public partial class ColorExtractionDialog : CustomWindow
         OutputLower = lower;
         // 输出颜色上下限值
     }
-
-    protected override void Close(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
 }

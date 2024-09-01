@@ -106,11 +106,6 @@ namespace MFATools.Views
             }
         }
 
-        protected override void Close(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
         private void GraphLayout_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             // if (e.ChangedButton == MouseButton.Right)

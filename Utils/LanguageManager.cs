@@ -4,7 +4,7 @@ using WPFLocalizeExtension.Extensions;
 
 namespace MFATools.Utils;
 
-public class LanguageManager
+public static class LanguageManager
 {
     public static event EventHandler? LanguageChanged;
 

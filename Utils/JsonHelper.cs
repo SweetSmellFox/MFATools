@@ -3,14 +3,14 @@ using Newtonsoft.Json;
 
 namespace MFATools.Utils;
 
-public static class JSONHelper
+public static class JsonHelper
 {
-    /// <summary>
+   /// <summary>
     /// 将对象序列化为指定的文件名
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="obj"></param>
-    /// <param name="fileName"></param>
+    /// <param name="file"></param>
+    /// <param name="defaultS"></param>
     /// <returns></returns>
     ///    //序列化到文件
     public static T? ReadFromConfigJsonFile<T>(string file, T? defaultS = default)
@@ -35,10 +35,17 @@ public static class JSONHelper
     }
 
 
-    public static void WriteToConfigJsonFile(string file, object content)
+    public static void WriteToConfigJsonFile(string file, object? content)
     {
+        if (content == null) return;
+        var settings = new JsonSerializerSettings
+        {
+            Formatting = Formatting.Indented,
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore
+        };
         // var dir = Directory.GetCurrentDirectory();
-        string jsonString = JsonConvert.SerializeObject(content, Newtonsoft.Json.Formatting.Indented);
+        string jsonString = JsonConvert.SerializeObject(content, settings);
         string directory = $"{AppDomain.CurrentDomain.BaseDirectory}/config/{file}.json";
         if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}/config"))
             Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}/config");
@@ -83,7 +90,7 @@ public static class JSONHelper
         File.WriteAllText(directory, jsonString);
     }
 
-    public static T? ReadFromJsonFilePath<T>(string path, string file, T? defaultS = default)
+    public static T? ReadFromJsonFilePath<T>(string path, string file, T? defaultS = default, Action? action = null)
     {
         if (string.IsNullOrWhiteSpace(path))
             path = AppDomain.CurrentDomain.BaseDirectory;
@@ -93,11 +100,14 @@ public static class JSONHelper
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             string jsonString = File.ReadAllText(directory);
-            return JsonConvert.DeserializeObject<T>(jsonString) ?? defaultS ;
+            return JsonConvert.DeserializeObject<T>(jsonString) ?? defaultS;
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
+            LoggerService.LogError(e);
+            Growls.Error(e.Message);
+            action?.Invoke();
             return defaultS;
         }
     }
