@@ -185,7 +185,7 @@ public class EditTaskDialogViewModel : ObservableObject
 
     private void CopyTask(object parameter)
     {
-        if (SelectedAttribute != null && SelectedAttribute.Attribute != null)
+        if (SelectedAttribute != null)
         {
             var settings = new JsonSerializerSettings
             {

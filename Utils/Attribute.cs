@@ -41,12 +41,12 @@ public class Attribute
 
         return $"\"{Key}\" : {Value}";
     }
-    
+
     public string GetKey()
     {
-        return Key;
+        return $"{Key}";
     }
-    
+
     public string GetValue()
     {
         if (Value is List<List<int>> lli)
@@ -64,13 +64,24 @@ public class Attribute
         return $"{Value}";
     }
 
-    public static bool operator ==(Attribute a1, Attribute a2)
+    public static bool operator ==(Attribute? a1, object? a2)
     {
-        return a1.Key.Equals(a2.Key) && a1.Value == a2.Value;
+        return a2 is Attribute attribute && a1?.Key?.Equals(attribute.Key) == true && a1.Value == attribute.Value;
     }
 
-    public static bool operator !=(Attribute a1, Attribute a2)
+    public static bool operator !=(Attribute? a1, object? a2)
     {
-        return !a1.Key.Equals(a2.Key) || a1.Value != a2.Value;
+        return a2 is not Attribute attribute || a1?.Key?.Equals(attribute.Key) != true || a1.Value != attribute.Value;
     }
+
+    public override bool Equals(object? obj)
+    {
+        return this == obj;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Key, Value);
+    }
+
 }

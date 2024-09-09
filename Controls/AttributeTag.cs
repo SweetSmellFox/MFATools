@@ -100,7 +100,8 @@ public class AttributeTag : Tag
     public AttributeTag(Attribute? attribute)
     {
         InitializeTag();
-        Attribute ??= attribute;
+        if (attribute != null)
+            Attribute ??= attribute;
     }
 
     private void InitializeTag()
