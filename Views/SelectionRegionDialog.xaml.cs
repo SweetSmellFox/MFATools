@@ -1,31 +1,22 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MFATools.Utils;
-using MFATools.ViewModels;
-using HandyControl.Controls;
-using HandyControl.Data;
-using MFATools.Controls;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Attribute = MFATools.Utils.Attribute;
 
 namespace MFATools.Views;
 
-public partial class SelectionRegionDialog : CustomWindow
+public partial class SelectionRegionDialog
 {
     private Point _startPoint;
     private Rectangle? _selectionRectangle;
     public List<int>? Output { get; set; }
     public bool IsRoi { get; set; }
 
-    public SelectionRegionDialog(BitmapImage bitmapImage) :
-        base()
+    public SelectionRegionDialog(BitmapImage bitmapImage)
     {
         InitializeComponent();
         UpdateImage(bitmapImage);
@@ -34,10 +25,10 @@ public partial class SelectionRegionDialog : CustomWindow
     private double _scaleRatio;
     private double originWidth;
     private double originHeight;
+
     private void UpdateImage(BitmapImage _imageSource)
     {
         image.Source = _imageSource;
-        Console.WriteLine($"{_imageSource.PixelWidth},{_imageSource.PixelHeight}");
 
         originWidth = _imageSource.PixelWidth;
         originHeight = _imageSource.PixelHeight;
@@ -58,14 +49,14 @@ public partial class SelectionRegionDialog : CustomWindow
         Height = image.Height + 100;
     }
 
-     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
+    private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
         var position = e.GetPosition(image);
         var canvasPosition = e.GetPosition(SelectionCanvas);
 
         // 判断点击是否在Image边缘5个像素内
         if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 &&
-            canvasPosition.X > -5 && canvasPosition.Y > -5)
+            canvasPosition is { X: > -5, Y: > -5 })
         {
             if (_selectionRectangle != null)
             {
@@ -84,7 +75,7 @@ public partial class SelectionRegionDialog : CustomWindow
             {
                 Stroke = Brushes.Red,
                 StrokeThickness = 2.5,
-                StrokeDashArray = new DoubleCollection { 2 }
+                StrokeDashArray = { 2 }
             };
 
             Canvas.SetLeft(_selectionRectangle, _startPoint.X);
@@ -173,10 +164,32 @@ public partial class SelectionRegionDialog : CustomWindow
 
         // 显示 x, y, w, h 值，可以替换为其他处理逻辑
         // Growl.InfoGlobal($"Roi: {x}, {y}, {w}, {h}");
-        Output = new() { (int)x, (int)y, (int)w, (int)h };
+        Output = [(int)x, (int)y, (int)w, (int)h];
         DialogResult = true;
         IsRoi = SelectType.SelectedIndex == 0;
         Close();
     }
     
+    private void Load(object sender, RoutedEventArgs e)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog
+        {
+            Title = "LoadImageTitle".GetLocalizationString()
+        };
+        openFileDialog.Filter = "ImageFilter".GetLocalizationString();
+        
+        if (openFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                BitmapImage bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
+                UpdateImage(bitmapImage);
+            }
+            catch (Exception ex)
+            {
+                ErrorView errorView = new ErrorView(ex, false);
+                errorView.Show();
+            }
+        }
+    }
 }

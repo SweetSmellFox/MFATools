@@ -99,6 +99,7 @@ namespace MFATools.Views
         private void btnClose_Click(object sender, RoutedEventArgs e)
         {
             Close();
+            Application.Current.Shutdown();
         }
 
         private void btnRestore_Click(object sender, RoutedEventArgs e)

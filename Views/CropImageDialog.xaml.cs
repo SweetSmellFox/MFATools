@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -7,17 +6,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MFATools.Utils;
-using MFATools.ViewModels;
-using HandyControl.Controls;
-using HandyControl.Data;
 using MFATools.Controls;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Attribute = MFATools.Utils.Attribute;
 
 namespace MFATools.Views;
 
-public partial class CropImageDialog : CustomWindow
+public partial class CropImageDialog
 {
     private Point _startPoint;
     private Rectangle? _selectionRectangle;
@@ -25,8 +19,7 @@ public partial class CropImageDialog : CustomWindow
     public string? Output { get; set; }
     public List<int>? OutputRoi { get; set; }
 
-    public CropImageDialog(BitmapImage bitmapImage) :
-        base()
+    public CropImageDialog(BitmapImage bitmapImage)
     {
         InitializeComponent();
         UpdateImage(bitmapImage);
@@ -39,7 +32,6 @@ public partial class CropImageDialog : CustomWindow
     private void UpdateImage(BitmapImage _imageSource)
     {
         image.Source = _imageSource;
-        Console.WriteLine($"{_imageSource.PixelWidth},{_imageSource.PixelHeight}");
 
         originWidth = _imageSource.PixelWidth;
         originHeight = _imageSource.PixelHeight;
@@ -67,7 +59,7 @@ public partial class CropImageDialog : CustomWindow
 
         // 判断点击是否在Image边缘5个像素内
         if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 &&
-            canvasPosition.X > -5 && canvasPosition.Y > -5)
+            canvasPosition is { X: > -5, Y: > -5 })
         {
             if (_selectionRectangle != null)
             {
@@ -86,7 +78,7 @@ public partial class CropImageDialog : CustomWindow
             {
                 Stroke = Brushes.Red,
                 StrokeThickness = 2.5,
-                StrokeDashArray = new DoubleCollection { 2 }
+                StrokeDashArray = { 2 }
             };
 
             Canvas.SetLeft(_selectionRectangle, _startPoint.X);
@@ -179,48 +171,49 @@ public partial class CropImageDialog : CustomWindow
     private void SaveCroppedImage(double x, double y, double width, double height)
     {
         // 创建BitmapImage对象
-        var bitmapImage = image.Source as BitmapImage;
-        if (bitmapImage == null) return;
-        var roiX = Math.Max(x - 5, 0);
-        var roiY = Math.Max(y - 5, 0);
-        var roiW = Math.Min(width + 10, bitmapImage.PixelWidth - roiX);
-        var roiH = Math.Min(height + 10, bitmapImage.PixelHeight - roiY);
-        OutputRoi = new List<int> { (int)roiX, (int)roiY, (int)roiW, (int)roiH };
-        // 创建WriteableBitmap对象并加载BitmapImage
-        var writeableBitmap = new WriteableBitmap(bitmapImage);
-
-        // 创建一个用于存储裁剪区域的矩形
-        var cropRect = new Int32Rect((int)x, (int)y, (int)width, (int)height);
-
-        // 创建一个字节数组来保存裁剪区域的像素数据
-        var croppedPixels = new byte[cropRect.Width * cropRect.Height * 4];
-        writeableBitmap.CopyPixels(cropRect, croppedPixels, cropRect.Width * 4, 0);
-
-        // 创建一个新的WriteableBitmap来保存裁剪后的图像
-        var croppedBitmap = new WriteableBitmap(cropRect.Width, cropRect.Height, 96, 96, PixelFormats.Bgra32, null);
-        croppedBitmap.WritePixels(new Int32Rect(0, 0, cropRect.Width, cropRect.Height), croppedPixels,
-            cropRect.Width * 4, 0);
-
-        var saveFileDialog = new SaveFileDialog
+        if (image.Source is BitmapImage bitmapImage)
         {
-            Filter = "PNG 文件|*.png|JPEG 文件|*.jpg|Bitmap 文件|*.bmp",
-            DefaultExt = "png"
-        };
+            var roiX = Math.Max(x - 5, 0);
+            var roiY = Math.Max(y - 5, 0);
+            var roiW = Math.Min(width + 10, bitmapImage.PixelWidth - roiX);
+            var roiH = Math.Min(height + 10, bitmapImage.PixelHeight - roiY);
+            OutputRoi = new List<int> { (int)roiX, (int)roiY, (int)roiW, (int)roiH };
+            // 创建WriteableBitmap对象并加载BitmapImage
+            var writeableBitmap = new WriteableBitmap(bitmapImage);
 
-        if (saveFileDialog.ShowDialog() == true)
-        {
-            var encoder = GetEncoderByExtension(saveFileDialog.FileName);
-            encoder.Frames.Add(BitmapFrame.Create(croppedBitmap));
+            // 创建一个用于存储裁剪区域的矩形
+            var cropRect = new Int32Rect((int)x, (int)y, (int)width, (int)height);
 
-            using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
+            // 创建一个字节数组来保存裁剪区域的像素数据
+            var croppedPixels = new byte[cropRect.Width * cropRect.Height * 4];
+            writeableBitmap.CopyPixels(cropRect, croppedPixels, cropRect.Width * 4, 0);
+
+            // 创建一个新的WriteableBitmap来保存裁剪后的图像
+            var croppedBitmap = new WriteableBitmap(cropRect.Width, cropRect.Height, 96, 96, PixelFormats.Bgra32, null);
+            croppedBitmap.WritePixels(new Int32Rect(0, 0, cropRect.Width, cropRect.Height), croppedPixels,
+                cropRect.Width * 4, 0);
+
+            var saveFileDialog = new SaveFileDialog
             {
-                encoder.Save(fileStream);
-            }
+                Filter = "ImageFilter".GetLocalizationString(),
+                DefaultExt = "png"
+            };
 
-            // 设置 Output 属性为保存的文件名和路径
-            Output = System.IO.Path.GetFileName(saveFileDialog.FileName);
-            DialogResult = true;
-            Close();
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                var encoder = GetEncoderByExtension(saveFileDialog.FileName);
+                encoder.Frames.Add(BitmapFrame.Create(croppedBitmap));
+
+                using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
+                {
+                    encoder.Save(fileStream);
+                }
+
+                // 设置 Output 属性为保存的文件名和路径
+                Output = System.IO.Path.GetFileName(saveFileDialog.FileName);
+                DialogResult = true;
+                Close();
+            }
         }
     }
 
@@ -237,6 +230,29 @@ public partial class CropImageDialog : CustomWindow
                 return new BmpBitmapEncoder();
             default:
                 return new PngBitmapEncoder();
+        }
+    }
+    
+    private void Load(object sender, RoutedEventArgs e)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog
+        {
+            Title = "LoadImageTitle".GetLocalizationString()
+        };
+        openFileDialog.Filter = "ImageFilter".GetLocalizationString();
+        
+        if (openFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                BitmapImage bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
+                UpdateImage(bitmapImage);
+            }
+            catch (Exception ex)
+            {
+                ErrorView errorView = new ErrorView(ex, false);
+                errorView.Show();
+            }
         }
     }
 }

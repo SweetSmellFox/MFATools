@@ -1,23 +1,15 @@
-﻿using System.Collections.ObjectModel;
-using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MFATools.Utils;
-using MFATools.ViewModels;
-using HandyControl.Controls;
-using HandyControl.Data;
-using MFATools.Controls;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Attribute = MFATools.Utils.Attribute;
 
 namespace MFATools.Views;
 
-public partial class ColorExtractionDialog : CustomWindow
+public partial class ColorExtractionDialog
 {
     private Point _startPoint;
     private Rectangle? _selectionRectangle;
@@ -25,8 +17,7 @@ public partial class ColorExtractionDialog : CustomWindow
     public List<int>? OutputUpper { get; set; }
     public List<int>? OutputLower { get; set; }
 
-    public ColorExtractionDialog(BitmapImage bitmapImage) :
-        base()
+    public ColorExtractionDialog(BitmapImage bitmapImage)
     {
         InitializeComponent();
         UpdateImage(bitmapImage);
@@ -37,7 +28,6 @@ public partial class ColorExtractionDialog : CustomWindow
     private void UpdateImage(BitmapImage _imageSource)
     {
         image.Source = _imageSource;
-        Console.WriteLine($"{_imageSource.PixelWidth},{_imageSource.PixelHeight}");
 
         double imageWidth = _imageSource.PixelWidth;
         double imageHeight = _imageSource.PixelHeight;
@@ -65,7 +55,7 @@ public partial class ColorExtractionDialog : CustomWindow
 
         // 判断点击是否在Image边缘5个像素内
         if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 &&
-            canvasPosition.X > -5 && canvasPosition.Y > -5)
+            canvasPosition is { X: >= -5, Y: >= -5 })
         {
             if (_selectionRectangle != null)
             {
@@ -84,7 +74,7 @@ public partial class ColorExtractionDialog : CustomWindow
             {
                 Stroke = Brushes.Red,
                 StrokeThickness = 2.5,
-                StrokeDashArray = new DoubleCollection { 2 }
+                StrokeDashArray = { 2 }
             };
 
             Canvas.SetLeft(_selectionRectangle, _startPoint.X);
@@ -176,44 +166,69 @@ public partial class ColorExtractionDialog : CustomWindow
     private void GetColorRange(double x, double y, double width, double height)
     {
         // 创建BitmapImage对象
-        var bitmapImage = image.Source as BitmapImage;
-        if (bitmapImage == null)
-            return;
-        var roiX = Math.Max(x - 5, 0);
-        var roiY = Math.Max(y - 5, 0);
-        var roiW = Math.Min(width + 10, bitmapImage.PixelWidth - roiX);
-        var roiH = Math.Min(height + 10, bitmapImage.PixelHeight - roiY);
-        var writeableBitmap = new WriteableBitmap(bitmapImage);
 
-        OutputRoi = new List<int> { (int)roiX, (int)roiY, (int)roiW, (int)roiH };
-
-        var croppedBitmap = new CroppedBitmap(writeableBitmap, new Int32Rect((int)x, (int)y, (int)width, (int)height));
-
-        var pixels = new byte[(int)width * (int)height * 4];
-        croppedBitmap.CopyPixels(pixels, (int)width * 4, 0);
-
-        int minR = 255, minG = 255, minB = 255;
-        int maxR = 0, maxG = 0, maxB = 0;
-
-        for (int i = 0; i < pixels.Length; i += 4)
+        if (image.Source is BitmapImage bitmapImage)
         {
-            int r = pixels[i + 2];
-            int g = pixels[i + 1];
-            int b = pixels[i];
+            var roiX = Math.Max(x - 5, 0);
+            var roiY = Math.Max(y - 5, 0);
+            var roiW = Math.Min(width + 10, bitmapImage.PixelWidth - roiX);
+            var roiH = Math.Min(height + 10, bitmapImage.PixelHeight - roiY);
+            var writeableBitmap = new WriteableBitmap(bitmapImage);
 
-            if (r < minR) minR = r;
-            if (g < minG) minG = g;
-            if (b < minB) minB = b;
+            OutputRoi = new List<int> { (int)roiX, (int)roiY, (int)roiW, (int)roiH };
 
-            if (r > maxR) maxR = r;
-            if (g > maxG) maxG = g;
-            if (b > maxB) maxB = b;
+            var croppedBitmap =
+                new CroppedBitmap(writeableBitmap, new Int32Rect((int)x, (int)y, (int)width, (int)height));
+
+            var pixels = new byte[(int)width * (int)height * 4];
+            croppedBitmap.CopyPixels(pixels, (int)width * 4, 0);
+
+            int minR = 255, minG = 255, minB = 255;
+            int maxR = 0, maxG = 0, maxB = 0;
+
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                int r = pixels[i + 2];
+                int g = pixels[i + 1];
+                int b = pixels[i];
+
+                if (r < minR) minR = r;
+                if (g < minG) minG = g;
+                if (b < minB) minB = b;
+
+                if (r > maxR) maxR = r;
+                if (g > maxG) maxG = g;
+                if (b > maxB) maxB = b;
+            }
+
+            var lower = new List<int> { minR, minG, minB };
+            var upper = new List<int> { maxR, maxG, maxB };
+            OutputUpper = upper;
+            OutputLower = lower;
+            // 输出颜色上下限值
         }
+    }
 
-        var lower = new List<int> { minR, minG, minB };
-        var upper = new List<int> { maxR, maxG, maxB };
-        OutputUpper = upper;
-        OutputLower = lower;
-        // 输出颜色上下限值
+    private void Load(object sender, RoutedEventArgs e)
+    {
+        OpenFileDialog openFileDialog = new OpenFileDialog
+        {
+            Title = "LoadImageTitle".GetLocalizationString()
+        };
+        openFileDialog.Filter = "ImageFilter".GetLocalizationString();
+        
+        if (openFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                BitmapImage bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
+                UpdateImage(bitmapImage);
+            }
+            catch (Exception ex)
+            {
+                ErrorView errorView = new ErrorView(ex, false);
+                errorView.Show();
+            }
+        }
     }
 }

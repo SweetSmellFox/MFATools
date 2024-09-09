@@ -41,4 +41,36 @@ public class Attribute
 
         return $"\"{Key}\" : {Value}";
     }
+    
+    public string GetKey()
+    {
+        return Key;
+    }
+    
+    public string GetValue()
+    {
+        if (Value is List<List<int>> lli)
+            return $"{ConvertListToString(lli)}";
+
+        if (Value is List<int> li)
+            return $"{string.Join(",", li)}";
+
+        if (Value is List<string> ls)
+            return $"{string.Join(",", ls)}";
+
+        if (Value is string s)
+            return s;
+
+        return $"{Value}";
+    }
+
+    public static bool operator ==(Attribute a1, Attribute a2)
+    {
+        return a1.Key.Equals(a2.Key) && a1.Value == a2.Value;
+    }
+
+    public static bool operator !=(Attribute a1, Attribute a2)
+    {
+        return !a1.Key.Equals(a2.Key) || a1.Value != a2.Value;
+    }
 }

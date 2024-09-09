@@ -38,7 +38,7 @@
 
     <!-- 添加以下资源项 -->
     <data name="AppTitle" xml:space="preserve">
-        <value>MFA小工具</value>
+        <value>Maa框架任务管理器</value>
     </data>
     <data name="TabADB" xml:space="preserve">
         <value>ADB</value>
@@ -354,6 +354,30 @@
     <data name="WorkflowDiagramTitle" xml:space="preserve">
     <value>任务流程图</value>
 </data>
+    <data name="AddAbove" xml:space="preserve">
+        <value>添加至上方</value>
+    </data>
+    <data name="AddBelow" xml:space="preserve">
+        <value>添加至下方</value>
+    </data>
+    <data name="Task" xml:space="preserve">
+        <value>任务</value>
+    </data>
+    <data name="EnterTaskName" xml:space="preserve">
+        <value>请输入任务名称</value>
+    </data>
+    <data name="ResourceName" xml:space="preserve">
+        <value>资源名称</value>
+    </data>
+    <data name="ResourceVersion" xml:space="preserve">
+        <value>资源版本</value>
+    </data>
+    <data name="About" xml:space="preserve">
+        <value>关于</value>
+    </data>
+    <data name="ScreenshotTime" xml:space="preserve">
+        <value>截图耗时: {0}ms({1})</value>
+    </data>
     <data name="Error" xml:space="preserve">
         <value>错误</value>
     </data>
@@ -368,5 +392,38 @@
     </data>
     <data name="CopiedToClipboard" xml:space="preserve">
         <value>已复制到剪切板</value>
+    </data>
+    <data name="MiniTouch" xml:space="preserve">
+        <value>MiniTouch (默认)</value>
+    </data>
+    <data name="MaaTouch" xml:space="preserve">
+        <value>MaaTouch (实验功能)</value>
+    </data>
+    <data name="AdbInput" xml:space="preserve">
+        <value>AdbInput (不推荐)</value>
+    </data>
+    <data name="AutoDetect" xml:space="preserve">
+        <value>AutoDetect (自动检测)</value>
+    </data>
+    <data name="CopyKey" xml:space="preserve">
+        <value>复制键</value>
+    </data>
+    <data name="CopyValue" xml:space="preserve">
+        <value>复制值</value>
+    </data>
+    <data name="Edit" xml:space="preserve">
+        <value>编辑</value>
+    </data>
+    <data name="Load" xml:space="preserve">
+        <value>导入</value>
+    </data>
+    <data name="LoadImageTitle" xml:space="preserve">
+        <value>选择图片文件</value>
+    </data>
+    <data name="ImageFilter" xml:space="preserve">
+        <value>图片文件 (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp</value>
+    </data>
+    <data name="JSONFilter" xml:space="preserve">
+        <value>JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*</value>
     </data>
 </root>

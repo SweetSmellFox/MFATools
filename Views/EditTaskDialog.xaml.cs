@@ -106,11 +106,11 @@ public partial class EditTaskDialog
 
     private void Load(object sender, RoutedEventArgs e)
     {
-        OpenFileDialog openFileDialog = new OpenFileDialog()
+        OpenFileDialog openFileDialog = new OpenFileDialog
         {
-            Title = "LoadPipelineTitle".GetLocalizationString()
+            Title = "LoadPipelineTitle".GetLocalizationString(),
+            Filter = "JSONFilter".GetLocalizationString()
         };
-        openFileDialog.Filter = "JSON 文件 (*.json)|*.json|All files (*.*)|*.*";
         if (openFileDialog.ShowDialog() == true)
         {
             string filePath = openFileDialog.FileName;
@@ -258,11 +258,14 @@ public partial class EditTaskDialog
         newButton.MouseDoubleClick += EditAttribute;
         // 创建右键菜单
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem copyItem = new MenuItem { Header = "复制" };
+        MenuItem copyItem = new();
+        copyItem.BindLocalization("Copy", MenuItem.HeaderProperty);
         copyItem.Click += CopyAttribute;
-        MenuItem editItem = new MenuItem { Header = "编辑" };
+        MenuItem editItem = new();
+        editItem.BindLocalization("Edit", MenuItem.HeaderProperty);
         editItem.Click += EditAttribute;
-        MenuItem deleteItem = new MenuItem { Header = "删除" };
+        MenuItem deleteItem = new();
+        deleteItem.BindLocalization("Delete", MenuItem.HeaderProperty);
         deleteItem.Click += DeleteAttribute;
         contextMenu.Items.Add(copyItem);
         contextMenu.Items.Add(editItem);
@@ -292,7 +295,7 @@ public partial class EditTaskDialog
     {
         if (ListBoxDemo.Items.Count > 0)
         {
-            var lastItem = ListBoxDemo.Items[ListBoxDemo.Items.Count - 1];
+            var lastItem = ListBoxDemo.Items[-1];
             ListBoxDemo.ScrollIntoView(lastItem);
         }
     }
@@ -340,7 +343,7 @@ public partial class EditTaskDialog
 
         SaveFileDialog saveFileDialog = new SaveFileDialog
         {
-            Filter = "JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*",
+            Filter = "JSONFilter".GetLocalizationString(),
             DefaultExt = ".json",
             AddExtension = true
         };

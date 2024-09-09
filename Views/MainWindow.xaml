@@ -8,7 +8,7 @@
                        xmlns:properties="clr-namespace:MFATools.Styles.Properties"
                        xmlns:viewModels="clr-namespace:MFATools.ViewModels"
                        xmlns:dd="urn:gong-wpf-dragdrop"
-                       xmlns:converters="clr-namespace:MFATools.Utils.Converters"
+                       xmlns:converters="clr-namespace:MFATools.Utils.Converters" x:Name="home"
                        xmlns:lex="http://wpflocalizeextension.codeplex.com" IsResizable="True"
                        xmlns:engine="https://github.com/XAMLMarkupExtensions/WPFLocalizationExtension"
                        xmlns:utils="clr-namespace:MFATools.Utils"
@@ -51,11 +51,11 @@
 
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="40" />
+                    <RowDefinition Height="35" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <Border CornerRadius="10 10 0 0" VerticalAlignment="Top" x:Name="TitleBar"
-                        Padding="0,2,10,0" Height="30" Background="{DynamicResource MainContentBackgroundBrush}"
+                        Height="30" Background="{DynamicResource MainContentBackgroundBrush}"
                         ClipToBounds="False">
                     <Grid>
                         <Grid.RowDefinitions>
