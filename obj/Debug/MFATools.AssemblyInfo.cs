@@ -13,10 +13,10 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SweetFox")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.0.1")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.1+1f01552105da356a26a6762e815f127af76d68fa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.1+cc44cf0578c1133cb1f29482fa4e6b95fecfff1b")]
 [assembly: System.Reflection.AssemblyProductAttribute("MFATools")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MFATools")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.2.4")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.2.5")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]
 
