@@ -3,24 +3,25 @@ using Newtonsoft.Json.Linq;
 
 namespace MFATools.Utils.Converters;
 
-public class SingleOrIntListConverter : JsonConverter
+public class SingleOrDoubleListConverter : JsonConverter
 {
     public override bool CanConvert(Type objectType)
     {
-        return objectType == typeof(object);
+        return objectType == typeof(object) || objectType == typeof(double);
     }
 
-    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
+        JsonSerializer serializer)
     {
         JToken token = JToken.Load(reader);
-        if (token.Type == JTokenType.Integer)
+        if (token.Type == JTokenType.Float)
         {
-            return new List<int> { token.ToObject<int>() };
+            return token.ToObject<double>();
         }
 
         if (token.Type == JTokenType.Array)
         {
-            return token.ToObject<List<int>>();
+            return token.ToObject<List<double>>();
         }
 
         return null;
@@ -28,7 +29,18 @@ public class SingleOrIntListConverter : JsonConverter
 
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
-        if (value is List<int> list)
+        if (value is null)
+        {
+            return; 
+        }
+
+        if (value is double d)
+        {
+            writer.WriteValue(d);
+            return;
+        }
+
+        if (value is List<double> list)
         {
             if (list.Count == 1)
             {

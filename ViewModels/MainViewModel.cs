@@ -75,4 +75,12 @@ public class MainViewModel : ObservableObject
         get => _windowTopMostButtonForeground;
         set => SetProperty(ref _windowTopMostButtonForeground, value);
     }
+    
+    private bool _isAdb = true;
+
+    public bool IsAdb
+    {
+        get => _isAdb;
+        set => SetProperty(ref _isAdb, value);
+    }
 }

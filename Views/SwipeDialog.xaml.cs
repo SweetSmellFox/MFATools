@@ -8,7 +8,6 @@ using Microsoft.Win32;
 
 namespace MFATools.Views;
 
-
 public partial class SwipeDialog
 {
     private Point _startPoint;
@@ -17,8 +16,20 @@ public partial class SwipeDialog
     private Polygon? _arrowHead;
     private Point StartPoint { get; set; }
     private Point EndPoint { get; set; }
-    public List<int>? OutputBegin { get; private set; }
-    public List<int>? OutputEnd { get; private set; }
+    private List<int>? _outputBegin { get; set; }
+    private List<int>? _outputEnd { get; set; }
+
+    public List<int>? OutputBegin
+    {
+        get => _outputBegin;
+        private set => _outputBegin = value?.Select(i => i < 0 ? 0 : i).ToList();
+    }
+
+    public List<int>? OutputEnd
+    {
+        get => _outputEnd;
+        private set => _outputEnd = value?.Select(i => i < 0 ? 0 : i).ToList();
+    }
 
     public SwipeDialog(BitmapImage bitmapImage)
     {
@@ -33,7 +44,7 @@ public partial class SwipeDialog
     private void UpdateImage(BitmapImage imageSource)
     {
         image.Source = imageSource;
-        
+
         _originWidth = imageSource.PixelWidth;
         _originHeight = imageSource.PixelHeight;
 
@@ -164,7 +175,7 @@ public partial class SwipeDialog
         _arrowHead?.Points.Add(p1);
         _arrowHead?.Points.Add(p2);
     }
-    
+
     private void Load(object sender, RoutedEventArgs e)
     {
         OpenFileDialog openFileDialog = new OpenFileDialog
@@ -172,7 +183,7 @@ public partial class SwipeDialog
             Title = "LoadImageTitle".GetLocalizationString()
         };
         openFileDialog.Filter = "ImageFilter".GetLocalizationString();
-        
+
         if (openFileDialog.ShowDialog() == true)
         {
             try

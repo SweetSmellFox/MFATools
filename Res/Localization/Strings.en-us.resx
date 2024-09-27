@@ -74,8 +74,8 @@
     <data name="LanguageOption" xml:space="preserve">
         <value>Language(语言)</value>
     </data>
-    <data name="TouchModeOption" xml:space="preserve">
-    <value>Touch Mode</value>
+    <data name="InputModeOption" xml:space="preserve">
+    <value>Input Mode</value>
   </data>
     <data name="CaptureModeOption" xml:space="preserve">
     <value>Capture Mode</value>
@@ -101,8 +101,8 @@
     <data name="EmulatorSelectionMessage" xml:space="preserve">
     <value>Emulator selected: {0}</value>
   </data>
-    <data name="AdbTouchMode" xml:space="preserve">
-    <value>Touch Mode:</value>
+    <data name="AdbInputMode" xml:space="preserve">
+    <value>Input Mode:</value>
   </data>
     <data name="AdbCaptureMode" xml:space="preserve">
     <value>Capture Mode:</value>
@@ -183,9 +183,9 @@
     <value>Clear Attributes</value>
   </data>
     <data name="EditTaskDialog_SaveTask_Button" xml:space="preserve">
-    <value>Save Task</value>
-  </data>
-  <data name="EditTaskDialog_ShowChart_Button" xml:space="preserve">
+        <value>Save Task Name</value>
+    </data>
+    <data name="EditTaskDialog_ShowChart_Button" xml:space="preserve">
     <value>Flowchart</value>
   </data>
     <data name="Quit" xml:space="preserve">
@@ -397,5 +397,44 @@
     </data>
     <data name="JSONFilter" xml:space="preserve">
         <value>JSON Files (*.json)|*.json|All files (*.*)|*.*"</value>
+    </data>
+    <data name="ButtonClear" xml:space="preserve">
+        <value>Clear</value>
+    </data>
+    <data name="CommonSetting" xml:space="preserve">
+        <value>Common</value>
+    </data>
+    <data name="AdvancedSetting" xml:space="preserve">
+        <value>Advanced</value>
+    </data>
+    <data name="AutoStartOption" xml:space="preserve">
+        <value>Post-start operation</value>
+    </data>
+    <data name="None" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="StartupScript" xml:space="preserve">
+        <value>Startup Script</value>
+    </data>
+    <data name="Custom" xml:space="preserve">
+        <value>Custom</value>
+    </data>
+    <data name="AdbEditor" xml:space="preserve">
+        <value>Adb Editor</value>
+    </data>
+    <data name="AllFilter" xml:space="preserve">
+        <value>All Files (*.*)|*.*</value>
+    </data>
+    <data name="LoadFileTitle" xml:space="preserve">
+        <value>Select Any File</value>
+    </data>
+    <data name="AdbName" xml:space="preserve">
+        <value>Adb Name</value>
+    </data>
+    <data name="AdbSerial" xml:space="preserve">
+        <value>Adb Address</value>
+    </data>
+    <data name="AdbPath" xml:space="preserve">
+        <value>Adb Path</value>
     </data>
 </root>

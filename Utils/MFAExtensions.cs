@@ -67,4 +67,9 @@ public static class MFAExtensions
         foreach (var item in items)
             collection.Add(item);
     }
+
+    public static bool IsTrue(this bool? value)
+    {
+        return value == true;
+    }
 }

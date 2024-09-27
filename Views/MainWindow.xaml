@@ -1,28 +1,29 @@
-﻿<controls:CustomWindow x:Class="MFATools.Views.MainWindow"
-                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                       xmlns:hc="https://handyorg.github.io/handycontrol"
-                       xmlns:controls="clr-namespace:MFATools.Controls"
-                       xmlns:properties="clr-namespace:MFATools.Styles.Properties"
-                       xmlns:viewModels="clr-namespace:MFATools.ViewModels"
-                       xmlns:dd="urn:gong-wpf-dragdrop"
-                       xmlns:converters="clr-namespace:MFATools.Utils.Converters" x:Name="home"
-                       xmlns:lex="http://wpflocalizeextension.codeplex.com" IsResizable="True"
-                       xmlns:engine="https://github.com/XAMLMarkupExtensions/WPFLocalizationExtension"
-                       xmlns:utils="clr-namespace:MFATools.Utils"
-                       engine:ResxLocalizationProvider.DefaultAssembly="MFATools"
-                       engine:ResxLocalizationProvider.DefaultDictionary="Strings"
-                       mc:Ignorable="d"
-                       Title="{lex:Loc AppTitle}" Height="520" Width="800" MinWidth="410" MinHeight="205"
-                       WindowStartupLocation="CenterScreen" WindowStyle="None"
-                       Background="Transparent" AllowsTransparency="True"
-                       WindowState="Normal">
-    <controls:CustomWindow.DataContext>
+﻿<hc:Window x:Class="MFATools.Views.MainWindow"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+           xmlns:hc="https://handyorg.github.io/handycontrol"
+           xmlns:controls="clr-namespace:MFATools.Controls"
+           xmlns:properties="clr-namespace:MFATools.Styles.Properties"
+           xmlns:viewModels="clr-namespace:MFATools.ViewModels"
+           xmlns:dd="urn:gong-wpf-dragdrop"
+           xmlns:converters="clr-namespace:MFATools.Utils.Converters" x:Name="home"
+           xmlns:lex="http://wpflocalizeextension.codeplex.com"
+           xmlns:engine="https://github.com/XAMLMarkupExtensions/WPFLocalizationExtension"
+           xmlns:utils="clr-namespace:MFATools.Utils"
+           engine:ResxLocalizationProvider.DefaultAssembly="MFATools"
+           engine:ResxLocalizationProvider.DefaultDictionary="Strings"
+           mc:Ignorable="d"
+           Title="{lex:Loc AppTitle}" Height="520" Width="800" MinWidth="410" MinHeight="205"
+           ShowTitle="False" Icon="../logo.ico" WindowStartupLocation="CenterScreen"
+           NonClientAreaBackground="{DynamicResource MainContentBackgroundBrush}"
+           Background="{DynamicResource SecundaryBackgroundColor}"
+           WindowState="Normal">
+    <hc:Window.DataContext>
         <viewModels:MainViewModel />
-    </controls:CustomWindow.DataContext>
-    <controls:CustomWindow.Resources>
+    </hc:Window.DataContext>
+    <hc:Window.Resources>
         <converters:SubtractConverter x:Key="SubtractConverter" />
         <converters:CustomIsEnabledConverter x:Key="CustomIsEnabledConverter" />
         <DataTemplate x:Key="DeviceInfoTemplate">
@@ -44,179 +45,156 @@
         <utils:DeviceWindowTemplateSelector x:Key="DeviceWindowTemplateSelector"
                                             DeviceInfoTemplate="{StaticResource DeviceInfoTemplate}"
                                             WindowInfoTemplate="{StaticResource WindowInfoTemplate}" />
-    </controls:CustomWindow.Resources>
-    <Border CornerRadius="8" Background="{DynamicResource SecundaryBackgroundColor}"
-            BorderBrush="{DynamicResource GrayColor10}" BorderThickness="1">
-        <Grid>
+    </hc:Window.Resources>
+    <hc:Window.NonClientAreaContent>
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0"
+                        HorizontalAlignment="Left" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Margin="6 0 4 0" Text="{lex:Loc AppTitle}"
+                           Foreground="{DynamicResource PrimaryTextBrush}">
 
-            <Grid Grid.Column="0">
+                </TextBlock>
+                <TextBlock VerticalAlignment="Center" Foreground="{StaticResource GrayColor1}"
+                           Margin="2 0 4 0" x:Name="version" Text="Debug">
+                </TextBlock>
+            </StackPanel>
+
+            <Button Grid.Column="1" x:Name="btnPin" Padding="0 -2 0 0" Width="42"
+                    Content="📌" Click="ToggleWindowTopMost"
+                    Style="{StaticResource PushpinButtonStyle}"
+                    Foreground="{Binding WindowTopMostButtonForeground}">
+
+            </Button>
+        </Grid>
+    </hc:Window.NonClientAreaContent>
+    <Grid>
+
+        <Grid Grid.Column="0">
+            <Grid Grid.Row="1" Grid.Column="0" Margin="5 0 5 5">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="35" />
+                    <RowDefinition Height="36" />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <Border CornerRadius="10 10 0 0" VerticalAlignment="Top" x:Name="TitleBar"
-                        Height="30" Background="{DynamicResource MainContentBackgroundBrush}"
-                        ClipToBounds="False">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10 0 0 0 ">
-                            <Image VerticalAlignment="Center" DockPanel.Dock="Left" Source="/../logo.ico"
-                                   Height="20" Width="20">
-
-                            </Image>
-                            <TextBlock VerticalAlignment="Center" Margin="6 4 4 0" Text="{lex:Loc AppTitle}"
-                                       Foreground="{DynamicResource PrimaryTextBrush}">
-
-                            </TextBlock>
-                            <TextBlock VerticalAlignment="Center" Foreground="{StaticResource GrayColor1}"
-                                       Margin="2 4 4 0" x:Name="version" Text="Debug">
-                            </TextBlock>
-                        </StackPanel>
-                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" FlowDirection="RightToLeft">
-                            <Button x:Name="btnClose" Style="{StaticResource IconButtonsStyle}" Width="40"
-                                    ClipToBounds="True"
-                                    Content="{DynamicResource close}" Click="btnClose_Click" Tag="IsCloseButton" />
-                            <Button x:Name="btnRestore" Margin="5,0" Click="btnRestore_Click" Width="40">
-                                <Button.Style>
-                                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource IconButtonsStyle}">
-                                        <Setter Property="Content" Value="{DynamicResource maximize}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding ElementName=home, Path=WindowState}"
-                                                         Value="Maximized">
-                                                <Setter Property="Content"
-                                                        Value="{DynamicResource WindowRestoreGeometry}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                            <Button x:Name="btnMinimize" Style="{DynamicResource IconButtonsStyle}" Width="40"
-                                    Content="{DynamicResource minimize}" Click="btnMinimize_Click" />
-                            <Button x:Name="btnPin" Padding="0 -2 0 0" Width="42"
-                                    Content="📌" Click="ToggleWindowTopMost"
-                                    Style="{StaticResource PushpinButtonStyle}"
-                                    Foreground="{Binding WindowTopMostButtonForeground}">
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-                </Border>
-                <Grid Grid.Row="1" Grid.Column="0" Margin="5 0 5 5">
+                <hc:SimpleStackPanel Orientation="Horizontal" Margin="15,2,10,0" Height="30">
+                    <TabControl TabStripPlacement="Top" Background="Transparent"
+                                SelectionChanged="TabControl_OnSelectionChanged" IsEnabled="{Binding Idle}"
+                                BorderThickness="0" x:Name="TabControl"
+                                Style="{StaticResource TabControlCapsuleSolid}">
+                        <TabItem Header="{lex:Loc TabADB}" x:Name="adbTab"></TabItem>
+                        <TabItem Header="{lex:Loc TabWin32}" x:Name="win32Tab"></TabItem>
+                    </TabControl>
+                    <ComboBox Width="250" x:Name="deviceComboBox" Margin="4 0 0 0"
+                              IsEnabled="{Binding Idle}"
+                              ItemTemplateSelector="{StaticResource DeviceWindowTemplateSelector}"
+                              SelectionChanged="DeviceComboBox_OnSelectionChanged" />
+                    <Button ToolTip="{lex:Loc TooltipRefresh}" Width="20" Height="20" Margin="6 0 2 0"
+                            Style="{StaticResource textBoxButton}"
+                            Foreground="{DynamicResource GrayColor4}"
+                            Click="Refresh" IsEnabled="{Binding Idle}"
+                            Padding="0" hc:IconElement.Width="14"
+                            hc:IconElement.Geometry="{StaticResource clear}" />
+                    <Button ToolTip="{lex:Loc Custom}" x:Name="btnCustom" Width="20" Height="20" Margin="2 0 2 0"
+                            Style="{StaticResource textBoxButton}"
+                            Foreground="{DynamicResource GrayColor4}"
+                            Click="CustomAdb" IsEnabled="{Binding Idle}"
+                            Padding="0" hc:IconElement.Width="14"
+                            hc:IconElement.Geometry="{StaticResource CustomGeometry}" />
+                </hc:SimpleStackPanel>
+                <Grid Grid.Row="1" ClipToBounds="False" Margin="15 0 15 0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition />
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="15"></RowDefinition>
                     </Grid.RowDefinitions>
-                    <hc:SimpleStackPanel Orientation="Horizontal" Margin="15,0,10,0" Height="30">
-                        <TabControl TabStripPlacement="Top" Background="Transparent"
-                                    SelectionChanged="TabControl_OnSelectionChanged" IsEnabled="{Binding Idle}"
-                                    BorderThickness="0" x:Name="TabControl"
-                                    Style="{StaticResource TabControlCapsuleSolid}">
-                            <TabItem Header="{lex:Loc TabADB}" x:Name="adbTab"></TabItem>
-                            <TabItem Header="{lex:Loc TabWin32}" x:Name="win32Tab"></TabItem>
-                        </TabControl>
-                        <ComboBox Width="250" x:Name="deviceComboBox" Margin="4 0 0 0"
-                                  IsEnabled="{Binding Idle}"
-                                  ItemTemplateSelector="{StaticResource DeviceWindowTemplateSelector}"
-                                  SelectionChanged="DeviceComboBox_OnSelectionChanged" />
-                        <Button ToolTip="{lex:Loc TooltipRefresh}" Width="20" Height="20" Margin="6 0 2 0"
-                                Style="{StaticResource textBoxButton}"
-                                Foreground="{DynamicResource GrayColor4}"
-                                Click="Refresh" IsEnabled="{Binding Idle}"
-                                Padding="0" hc:IconElement.Width="14"
-                                hc:IconElement.Geometry="{StaticResource clear}" />
-                    </hc:SimpleStackPanel>
-                    <Grid Grid.Row="1" ClipToBounds="False" Margin="15 0 15 0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="25"></RowDefinition>
-                            <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="15"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" VerticalAlignment="Top"
-                              Margin="0,5,10,4">
+                    <Grid Grid.Row="0" VerticalAlignment="Top"
+                          Margin="0,5,10,4">
 
 
-                            <TextBlock VerticalAlignment="Center" Margin="5 0 0 0" Text="工具："
-                                       Foreground="{StaticResource GrayColor4}">
-                            </TextBlock>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Button ToolTip="{lex:Loc Copy}" Width="15"
-                                        Height="15" Visibility="Collapsed"
-                                        Style="{StaticResource textBoxButton}"
-                                        Foreground="{DynamicResource GrayColor4}"
-                                        Click="Copy"
-                                        Padding="0" hc:IconElement.Width="12" Margin="2 0 2 0"
-                                        hc:IconElement.Height="13"
-                                        hc:IconElement.Geometry="{StaticResource copy}" />
-                                <Button ToolTip="{lex:Loc EditTaskDialog_RecognitionText_Tooltip}" Width="15"
-                                        Height="15"
-                                        Style="{StaticResource textBoxButton}"
-                                        Foreground="{DynamicResource GrayColor4}"
-                                        Click="RecognitionText"
-                                        Padding="0" hc:IconElement.Width="12" Margin="2 0 2 0"
-                                        hc:IconElement.Height="12"
-                                        hc:IconElement.Geometry="{StaticResource RecognitionTextGeometry}" />
-                                <Button ToolTip="{lex:Loc EditTaskDialog_ColorExtraction_Tooltip}" Width="15"
-                                        Height="15"
-                                        Style="{StaticResource textBoxButton}"
-                                        Foreground="{DynamicResource GrayColor4}"
-                                        Click="ColorExtraction"
-                                        Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
-                                        hc:IconElement.Height="12"
-                                        hc:IconElement.Geometry="{StaticResource ColorExtractionGeometry}" />
-                                <Button ToolTip="{lex:Loc EditTaskDialog_Swipe_Tooltip}" Width="15" Height="15"
-                                        Style="{StaticResource textBoxButton}"
-                                        Foreground="{DynamicResource GrayColor4}"
-                                        Click="Swipe"
-                                        Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
-                                        hc:IconElement.Height="12"
-                                        hc:IconElement.Geometry="{StaticResource SwipeGeometry}" />
-                                <Button ToolTip="{lex:Loc EditTaskDialog_Screenshot_Tooltip}" Width="15" Height="15"
-                                        Style="{StaticResource textBoxButton}"
-                                        Foreground="{DynamicResource GrayColor4}"
-                                        Click="Screenshot"
-                                        Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
-                                        hc:IconElement.Height="12"
-                                        hc:IconElement.Geometry="{StaticResource ImageGeometry}" />
-                                <Button ToolTip="{lex:Loc EditTaskDialog_SelectionRegion_Tooltip}" Width="15"
-                                        Height="15"
-                                        Style="{StaticResource textBoxButton}"
-                                        Foreground="{DynamicResource GrayColor4}"
-                                        Click="SelectionRegion"
-                                        Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
-                                        hc:IconElement.Height="12"
-                                        hc:IconElement.Geometry="{StaticResource SelectionRegionGeometry}" />
-                                <Button ToolTip="{lex:Loc EditTaskDialog_ClearAttribute_Tooltip}" Width="15"
-                                        Height="15"
-                                        Style="{StaticResource textBoxButton}"
-                                        Foreground="{DynamicResource GrayColor4}"
-                                        Click="ClearLog"
-                                        Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
-                                        hc:IconElement.Height="12"
-                                        hc:IconElement.Geometry="{StaticResource ClearGeometry}" />
-                            </StackPanel>
-                        </Grid>
-                        <Border Grid.Row="1" Background="White" CornerRadius="8" Margin="0 4 4 0" Padding="4">
-
-                            <ScrollViewer>
-                                <hc:TagContainer Padding="5" BorderBrush="Transparent" x:Name="TagContainer">
-
-                                </hc:TagContainer>
-                            </ScrollViewer>
-
-                        </Border>
-
+                        <TextBlock VerticalAlignment="Center" Margin="5 0 0 0" Text="工具："
+                                   Foreground="{StaticResource GrayColor4}">
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <Button ToolTip="{lex:Loc Copy}" Width="15"
+                                    Height="15" Visibility="Collapsed"
+                                    Style="{StaticResource textBoxButton}"
+                                    Foreground="{DynamicResource GrayColor4}"
+                                    Click="Copy"
+                                    Padding="0" hc:IconElement.Width="12" Margin="2 0 2 0"
+                                    hc:IconElement.Height="13"
+                                    hc:IconElement.Geometry="{StaticResource copy}" />
+                            <Button ToolTip="{lex:Loc EditTaskDialog_RecognitionText_Tooltip}" Width="15"
+                                    Height="15"
+                                    Style="{StaticResource textBoxButton}"
+                                    Foreground="{DynamicResource GrayColor4}"
+                                    Click="RecognitionText"
+                                    Padding="0" hc:IconElement.Width="12" Margin="2 0 2 0"
+                                    hc:IconElement.Height="12"
+                                    hc:IconElement.Geometry="{StaticResource RecognitionTextGeometry}" />
+                            <Button ToolTip="{lex:Loc EditTaskDialog_ColorExtraction_Tooltip}" Width="15"
+                                    Height="15"
+                                    Style="{StaticResource textBoxButton}"
+                                    Foreground="{DynamicResource GrayColor4}"
+                                    Click="ColorExtraction"
+                                    Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
+                                    hc:IconElement.Height="12"
+                                    hc:IconElement.Geometry="{StaticResource ColorExtractionGeometry}" />
+                            <Button ToolTip="{lex:Loc EditTaskDialog_Swipe_Tooltip}" Width="15" Height="15"
+                                    Style="{StaticResource textBoxButton}"
+                                    Foreground="{DynamicResource GrayColor4}"
+                                    Click="Swipe"
+                                    Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
+                                    hc:IconElement.Height="12"
+                                    hc:IconElement.Geometry="{StaticResource SwipeGeometry}" />
+                            <Button ToolTip="{lex:Loc EditTaskDialog_Screenshot_Tooltip}" Width="15" Height="15"
+                                    Style="{StaticResource textBoxButton}"
+                                    Foreground="{DynamicResource GrayColor4}"
+                                    Click="Screenshot"
+                                    Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
+                                    hc:IconElement.Height="12"
+                                    hc:IconElement.Geometry="{StaticResource ImageGeometry}" />
+                            <Button ToolTip="{lex:Loc EditTaskDialog_SelectionRegion_Tooltip}" Width="15"
+                                    Height="15"
+                                    Style="{StaticResource textBoxButton}"
+                                    Foreground="{DynamicResource GrayColor4}"
+                                    Click="SelectionRegion"
+                                    Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
+                                    hc:IconElement.Height="12"
+                                    hc:IconElement.Geometry="{StaticResource SelectionRegionGeometry}" />
+                            <Button ToolTip="{lex:Loc EditTaskDialog_ClearAttribute_Tooltip}" Width="15"
+                                    Height="15"
+                                    Style="{StaticResource textBoxButton}"
+                                    Foreground="{DynamicResource GrayColor4}"
+                                    Click="ClearLog"
+                                    Padding="0" Margin="2 0  2 0" hc:IconElement.Width="12"
+                                    hc:IconElement.Height="12"
+                                    hc:IconElement.Geometry="{StaticResource ClearGeometry}" />
+                        </StackPanel>
                     </Grid>
+                    <Border Grid.Row="1" Background="White" CornerRadius="8" Margin="0 4 4 0" Padding="4">
 
+                        <ScrollViewer>
+                            <hc:TagContainer Padding="5" BorderBrush="Transparent" x:Name="TagContainer">
+
+                            </hc:TagContainer>
+                        </ScrollViewer>
+
+                    </Border>
 
                 </Grid>
+
+
             </Grid>
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Hidden" HorizontalAlignment="Right"
-                          VerticalAlignment="Bottom"
-                          Margin="0,40,0, 0">
-                <StackPanel hc:Growl.GrowlParent="True" VerticalAlignment="Top" Margin="0,0,10,10" x:Name="stackPanel"
-                            Background="Transparent" />
-            </ScrollViewer>
         </Grid>
-    </Border>
-</controls:CustomWindow>
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Hidden" HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Margin="0,40,0, 0">
+            <StackPanel hc:Growl.GrowlParent="True" VerticalAlignment="Top" Margin="0,0,10,10" x:Name="stackPanel"
+                        Background="Transparent" />
+        </ScrollViewer>
+    </Grid>
+
+</hc:Window>

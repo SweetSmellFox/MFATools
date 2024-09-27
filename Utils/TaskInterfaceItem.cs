@@ -5,15 +5,16 @@ namespace MFATools.Utils;
 
 public class TaskInterfaceItem
 {
-    public string? name;
-    public string? entry;
-    public bool? check;
-    public bool? repeatable;
-    public int? repeat_count;
-    [JsonConverter(typeof(MaaInterfaceSelectOptionConverter))]
-    public List<MaaInterface.MaaInterfaceSelectOption>? option;
+    [JsonProperty("name")] public string? Name;
+    [JsonProperty("entry")] public string? Entry;
+    [JsonProperty("check")] public bool? Check;
+    [JsonProperty("repeatable")] public bool? Repeatable;
+    [JsonProperty("repeat_count")] public int? RepeatCount;
 
-    public Dictionary<string, TaskModel>? param;
+    [JsonProperty("option")] [JsonConverter(typeof(MaaInterfaceSelectOptionConverter))]
+    public List<MaaInterface.MaaInterfaceSelectOption>? Option;
+
+    [JsonProperty("pipeline_override")] public Dictionary<string, TaskModel>? PipelineOverride;
 
     public override string ToString()
     {
@@ -25,8 +26,8 @@ public class TaskInterfaceItem
         };
 
         return JsonConvert.SerializeObject(this, settings);
-    }    
-    
+    }
+
     /// <summary>
     /// Creates a deep copy of the current <see cref="TaskInterfaceItem"/> instance.
     /// </summary>

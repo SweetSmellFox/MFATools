@@ -38,7 +38,7 @@
 
     <!-- 添加以下资源项 -->
     <data name="AppTitle" xml:space="preserve">
-        <value>Maa框架任务管理器</value>
+        <value>Maa小工具</value>
     </data>
     <data name="TabADB" xml:space="preserve">
         <value>ADB</value>
@@ -102,7 +102,7 @@
     <data name="LanguageOption" xml:space="preserve">
   <value>语言(Language)</value>
 </data>
-    <data name="TouchModeOption" xml:space="preserve">
+    <data name="InputModeOption" xml:space="preserve">
   <value>触控模式</value>
 </data>
     <data name="CaptureModeOption" xml:space="preserve">
@@ -129,7 +129,7 @@
     <data name="EmulatorSelectionMessage" xml:space="preserve">
   <value>已选择模拟器:{0}</value>
 </data>
-    <data name="AdbTouchMode" xml:space="preserve">
+    <data name="AdbInputMode" xml:space="preserve">
   <value>触控模式:</value>
 </data>
     <data name="AdbCaptureMode" xml:space="preserve">
@@ -211,8 +211,8 @@
     <value>清空属性</value>
   </data>
     <data name="EditTaskDialog_SaveTask_Button" xml:space="preserve">
-    <value>保存任务</value>
-  </data>
+        <value>保存任务名称</value>
+    </data>
     <data name="EditTaskDialog_ShowChart_Button" xml:space="preserve">
         <value>流程图</value>
     </data>
@@ -425,5 +425,44 @@
     </data>
     <data name="JSONFilter" xml:space="preserve">
         <value>JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*</value>
+    </data>
+    <data name="ButtonClear" xml:space="preserve">
+        <value>清空</value>
+    </data>
+    <data name="CommonSetting" xml:space="preserve">
+        <value>普通设置</value>
+    </data>
+    <data name="AdvancedSetting" xml:space="preserve">
+        <value>高级设置</value>
+    </data>
+    <data name="AutoStartOption" xml:space="preserve">
+        <value>启动后操作</value>
+    </data>
+    <data name="None" xml:space="preserve">
+        <value>无</value>
+    </data>
+    <data name="StartupScript" xml:space="preserve">
+        <value>启动脚本</value>
+    </data>
+    <data name="Custom" xml:space="preserve">
+        <value>自定义</value>
+    </data>
+    <data name="AdbEditor" xml:space="preserve">
+        <value>Adb 编辑器</value>
+    </data>
+    <data name="AllFilter" xml:space="preserve">
+        <value>所有文件 (*.*)|*.*</value>
+    </data>
+    <data name="LoadFileTitle" xml:space="preserve">
+        <value>选择 任意 文件</value>
+    </data>
+    <data name="AdbName" xml:space="preserve">
+        <value>Adb名称</value>
+    </data>
+    <data name="AdbPath" xml:space="preserve">
+        <value>Adb路径</value>
+    </data>
+    <data name="AdbSerial" xml:space="preserve">
+        <value>Adb地址</value>
     </data>
 </root>

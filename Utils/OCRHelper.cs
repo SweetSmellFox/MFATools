@@ -17,30 +17,30 @@ public class OCRHelper
 {
     public class RecognitionQuery
     {
-        public List<RecognitionResult>? all;
-        public RecognitionResult? best;
-        public List<RecognitionResult>? filtered;
+        [JsonProperty("all")] public List<RecognitionResult>? All;
+        [JsonProperty("best")] public RecognitionResult? Best;
+        [JsonProperty("filtered")] public List<RecognitionResult>? Filtered;
     }
 
     public class RecognitionResult
     {
-        public List<int>? box;
-        public double? score;
-        public string? text;
+        [JsonProperty("box")] public List<int>? Box;
+        [JsonProperty("score")] public double? Score;
+        [JsonProperty("text")] public string? Text;
     }
 
     public static void Initialize()
     {
     }
 
-    public static string ReadTextFromMAARecognition(int x, int y, int width, int height)
+    public static string ReadTextFromMAATasker(int x, int y, int width, int height)
     {
         string result = string.Empty;
-        TaskItemViewModel taskItemViewModel = new TaskItemViewModel()
+        TaskItemViewModel taskItemViewModel = new TaskItemViewModel
         {
-            Task = new TaskModel()
+            Task = new TaskModel
             {
-                recognition = "OCR", roi = new List<int>
+                Recognition = "OCR", Roi = new List<int>
                 {
                     x, y,
                     width, height
@@ -48,15 +48,15 @@ public class OCRHelper
             },
             Name = "AppendOCR",
         };
-        var job = MaaProcessor.Instance?.GetCurrentInstance()?
-            .AppendRecognition(taskItemViewModel.Name, taskItemViewModel.ToString());
-        if (job != null && job.Wait() == MaaJobStatus.Success)
+        var job = MaaProcessor.Instance.GetCurrentTasker()?
+            .AppendPipeline(taskItemViewModel.Name, taskItemViewModel.ToString());
+        if (job?.Wait() == MaaJobStatus.Succeeded)
         {
-            RecognitionQuery? query =
+            var query =
                 JsonConvert.DeserializeObject<RecognitionQuery>(job.QueryRecognitionDetail()?
                     .Detail ?? string.Empty);
-            if (!string.IsNullOrWhiteSpace(query?.best?.text))
-                result = query.best.text;
+            if (!string.IsNullOrWhiteSpace(query?.Best?.Text))
+                result = query.Best.Text;
         }
         else
         {
@@ -64,19 +64,18 @@ public class OCRHelper
         }
 
         Console.WriteLine($"识别结果: {result}");
-        // 拼接结果文本
         return result;
     }
 
-    public static string ReadTextFromMAASyncContext(in IMaaSyncContext syncContext, IMaaImageBuffer image, int x, int y,
+    public static string ReadTextFromMAAContext(in IMaaContext context, IMaaImageBuffer image, int x, int y,
         int width, int height)
     {
-        string result = string.Empty;
-        TaskItemViewModel taskItemViewModel = new TaskItemViewModel()
+        var result = string.Empty;
+        var taskItemViewModel = new TaskItemViewModel
         {
-            Task = new TaskModel()
+            Task = new TaskModel
             {
-                recognition = "OCR", roi = new List<int>
+                Recognition = "OCR", Roi = new List<int>
                 {
                     x, y,
                     width, height
@@ -84,18 +83,15 @@ public class OCRHelper
             },
             Name = "AppendOCR",
         };
-        IMaaStringBuffer outDetail = new MaaStringBuffer();
-        syncContext.RunRecognizer(image, taskItemViewModel.Name, taskItemViewModel.ToString(), new MaaRectBuffer()
+        var detail =
+            context.RunRecognition(taskItemViewModel.Name, taskItemViewModel.ToString(), image) as
+                RecognitionDetail<MaaImageBuffer>;
+
+        if (detail != null)
         {
-            X = x, Y = y, Width = width, Height = height
-        }, outDetail);
-        string? json = outDetail.ToString();
-        if (!string.IsNullOrWhiteSpace(json))
-        {
-            RecognitionQuery? query =
-                JsonConvert.DeserializeObject<RecognitionQuery>(json);
-            if (query?.best != null && !string.IsNullOrWhiteSpace(query.best?.text))
-                result = query.best.text;
+            var query = JsonConvert.DeserializeObject<RecognitionQuery>(detail.Detail);
+            if (!string.IsNullOrWhiteSpace(query?.Best?.Text))
+                result = query.Best.Text;
         }
         else
         {
@@ -106,37 +102,4 @@ public class OCRHelper
 
         return result;
     }
-
-    // public static string ReadTextFromBitmapImage(BitmapImage bitmapImage, int x, int y, int width, int height)
-    // {
-    //     string tempFilePath = Path.GetTempFileName() + ".png";
-    //
-    //     // 将 BitmapImage 转换为 System.Drawing.Bitmap
-    //     using (MemoryStream memoryStream = new MemoryStream())
-    //     {
-    //         PngBitmapEncoder encoder = new PngBitmapEncoder();
-    //         encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
-    //         encoder.Save(memoryStream);
-    //         memoryStream.Position = 0;
-    //
-    //         using (Bitmap bitmap = new Bitmap(memoryStream))
-    //         {
-    //             // 裁剪图像区域
-    //             Rectangle cropRect = new Rectangle(x, y, width, height);
-    //             using (Bitmap croppedBitmap = bitmap.Clone(cropRect, bitmap.PixelFormat))
-    //             {
-    //                 // 保存裁剪后的图像
-    //                 croppedBitmap.Save(tempFilePath, ImageFormat.Png);
-    //             }
-    //         }
-    //     }
-    //
-    //     // 文字识别
-    //     var Text = "";
-    //     // 清理临时文件
-    //     File.Delete(tempFilePath);
-    //
-    //     // 拼接结果文本
-    //     return Text ?? string.Empty;
-    // }
 }

@@ -14,8 +14,21 @@ public partial class RecognitionTextDialog
 {
     private Point _startPoint;
     private Rectangle? _selectionRectangle;
-    public List<int>? Output { get; set; }
-    public List<int>? OutputRoi { get; set; }
+    private List<int>? _output;
+
+    public List<int>? Output
+    {
+        get => _output;
+        set => _output = value?.Select(i => i < 0 ? 0 : i).ToList();
+    }
+
+    private List<int>? _outputRoi { get; set; }
+
+    public List<int>? OutputRoi
+    {
+        get => _outputRoi;
+        set => _outputRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
+    }
 
     public RecognitionTextDialog(BitmapImage bitmapImage)
     {
@@ -172,7 +185,7 @@ public partial class RecognitionTextDialog
         DialogResult = true;
         Close();
     }
-    
+
     private void Load(object sender, RoutedEventArgs e)
     {
         OpenFileDialog openFileDialog = new OpenFileDialog
@@ -180,7 +193,7 @@ public partial class RecognitionTextDialog
             Title = "LoadImageTitle".GetLocalizationString()
         };
         openFileDialog.Filter = "ImageFilter".GetLocalizationString();
-        
+
         if (openFileDialog.ShowDialog() == true)
         {
             try

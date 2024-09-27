@@ -16,7 +16,7 @@ public class DragItemViewModel : ObservableObject
     public DragItemViewModel(TaskInterfaceItem interfaceItem)
     {
         InterfaceItem = interfaceItem;
-        Name = interfaceItem.name ?? "未命名";
+        Name = interfaceItem.Name ?? "未命名";
     }
 
 
@@ -44,7 +44,7 @@ public class DragItemViewModel : ObservableObject
             SetProperty(ref _isCheckedWithNull, value);
             value ??= false;
             if (InterfaceItem != null)
-                InterfaceItem.check = IsChecked;
+                InterfaceItem.Check = IsChecked;
             JsonHelper.WriteToJsonFilePath(MaaProcessor.Resource, "interface", MaaInterface.Instance);
         }
     }
@@ -82,10 +82,10 @@ public class DragItemViewModel : ObservableObject
         {
             if (_interfaceItem != null)
             {
-                if (_interfaceItem.name != null)
-                    Name = _interfaceItem.name;
-                if ((_interfaceItem.option == null || _interfaceItem.option?.Count == 0) &&
-                    _interfaceItem.repeatable == false)
+                if (_interfaceItem.Name != null)
+                    Name = _interfaceItem.Name;
+                if ((_interfaceItem.Option == null || _interfaceItem.Option?.Count == 0) &&
+                    _interfaceItem.Repeatable == false)
                     SettingVisibility = Visibility.Hidden;
             }
 

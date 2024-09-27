@@ -1,5 +1,8 @@
-﻿using System.Windows;
+﻿using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Animation;
 using HandyControl.Controls;
 using HandyControl.Data;
 using HandyControl.Data.Enum;
@@ -101,13 +104,18 @@ public class AttributeTag : Tag
     {
         InitializeTag();
         if (attribute != null)
-            Attribute ??= attribute;
+            Attribute = attribute;
     }
 
     private void InitializeTag()
     {
         Style = FindResource("TagBaseStyle") as Style;
         ContextMenu contextMenu = new ContextMenu();
+        MouseDown += (_, args) =>
+        {
+            if (args.ChangedButton == MouseButton.Left)
+                Copy(null, null);
+        };
         MenuItem copyItem = new();
         copyItem.BindLocalization("Copy", MenuItem.HeaderProperty);
         copyItem.Click += Copy;
@@ -123,28 +131,67 @@ public class AttributeTag : Tag
         ContextMenu = contextMenu;
         popTip = new()
         {
-            HitMode = HitMode.None, PlacementType = PlacementType.Left
+            HitMode = HitMode.None, PlacementType = PlacementType.BottomLeft
         };
         popTip.BindLocalization("CopiedToClipboard", Poptip.ContentProperty);
         Poptip.SetInstance(this, popTip);
+    }
+
+    private CancellationTokenSource? _fadeOutCts;
+
+    public void ShowPopTip(Poptip popTip)
+    {
+        CallSwitchPopTip(popTip, true);
+    }
+
+    public void HidePopTip(Poptip popTip)
+    {
+        CallSwitchPopTip(popTip, false);
+    }
+
+    private void CallSwitchPopTip(Poptip popTip, bool isShow)
+    {
+        if (popTip == null) throw new ArgumentNullException(nameof(popTip));
+
+        var method = typeof(Poptip).GetMethod("SwitchPoptip", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        if (method == null)
+        {
+            throw new InvalidOperationException("Method SwitchPoptip not found.");
+        }
+
+        // 调用私有方法
+        method.Invoke(popTip, [isShow]);
     }
 
     private void Tip()
     {
         if (popTip != null)
         {
+            ShowPopTip(popTip);
+
+            _fadeOutCts?.Cancel();
+            _fadeOutCts = new CancellationTokenSource();
+
             TaskManager.RunTaskAsync(() =>
             {
-                Dispatcher.Invoke(() => { popTip.IsOpen = true; });
-
-                Task.Delay(500).Wait();
-
-                Dispatcher.Invoke(() => { popTip.IsOpen = false; });
+                try
+                {
+                    Task.Delay(600, _fadeOutCts.Token).Wait();
+                    if (!_fadeOutCts.Token.IsCancellationRequested)
+                    {
+                        popTip.Dispatcher.Invoke(() => HidePopTip(popTip));
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                }
             });
         }
     }
 
-    private void Copy(object sender, RoutedEventArgs e)
+
+    private void Copy(object? sender, RoutedEventArgs? e)
     {
         Clipboard.SetDataObject(Attribute.ToString());
         Tip();

@@ -105,6 +105,37 @@ public class CustomWindow : Window
         base.Close();
     }
 
+    protected void btnClose_Click(object sender, RoutedEventArgs e)
+    {
+        base.Close();
+    }
+
+    protected void btnRestore_Click(object sender, RoutedEventArgs e)
+    {
+        var titleBar = FindName("TitleBar") as FrameworkElement;
+        if (WindowState == WindowState.Normal)
+        {
+            var workingArea = SystemParameters.WorkArea;
+
+            MaxHeight = workingArea.Height + 8;
+
+            WindowState = WindowState.Maximized;
+
+            if (titleBar != null) titleBar.Margin = new Thickness(6, 5, 6, 0);
+        }
+        else
+        {
+            if (titleBar != null)
+                titleBar.Margin = new Thickness(0);
+            WindowState = WindowState.Normal;
+        }
+    }
+
+    protected void btnMinimize_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
     protected void Window_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _pressedPosition = e.GetPosition(this);

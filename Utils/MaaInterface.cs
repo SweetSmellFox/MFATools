@@ -1,134 +1,172 @@
 ﻿using MaaFramework.Binding.Custom;
 using MFATools.Utils.Converters;
+using MFATools.Views;
 using Newtonsoft.Json;
 
-namespace MFATools.Utils
+namespace MFATools.Utils;
+
+public class MaaInterface
 {
-    public class MaaInterface
+    public class MaaInterfaceOptionCase
     {
-        public class MaaInterfaceOptionCase
-        {
-            public string? name { get; set; }
-            public Dictionary<string, TaskModel>? param { get; set; }
+        [JsonProperty("name")] public string? Name { get; set; }
+        [JsonProperty("pipeline_override")] public Dictionary<string, TaskModel>? PipelineOverride { get; set; }
 
-            public override string ToString()
+        public override string ToString()
+        {
+            var settings = new JsonSerializerSettings
             {
-                var settings = new JsonSerializerSettings
-                {
-                    Formatting = Formatting.Indented,
-                    NullValueHandling = NullValueHandling.Ignore,
-                    DefaultValueHandling = DefaultValueHandling.Ignore
-                };
-                return JsonConvert.SerializeObject(param, settings);
-            }
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore
+            };
+            return JsonConvert.SerializeObject(PipelineOverride, settings);
         }
+    }
 
-        public class MaaInterfaceOption
+    public class MaaInterfaceOption
+    {
+        [JsonIgnore] public string Name { get; set; } = string.Empty;
+        [JsonProperty("cases")] public List<MaaInterfaceOptionCase>? Cases { get; set; }
+    }
+
+    public class MaaInterfaceSelectOption
+    {
+        [JsonProperty("name")] public string? Name { get; set; }
+        [JsonProperty("index")] public int? Index { get; set; }
+
+        public override string ToString()
         {
-            public string name { get; set; } = string.Empty;
-            public List<MaaInterfaceOptionCase>? cases { get; set; }
+            return Name ?? string.Empty;
         }
+    }
 
-        public class MaaInterfaceSelectOption
+    public class CustomExecutor
+    {
+        [JsonIgnore] public string? Name { get; set; }
+        [JsonProperty("exec_path")] public string? ExecPath { get; set; }
+
+        [JsonConverter(typeof(SingleOrListConverter))]
+        [JsonProperty("exec_param")]
+        public List<string>? ExecParam { get; set; }
+    }
+
+    public class MaaCustomResource
+    {
+        [JsonProperty("name")] public string? Name { get; set; }
+
+        [JsonConverter(typeof(SingleOrListConverter))]
+        [JsonProperty("path")]
+        public List<string>? Path { get; set; }
+    }
+
+    public class MaaResourceVersion
+    {
+        [JsonProperty("name")] public string? Name { get; set; }
+        [JsonProperty("version")] public string? Version { get; set; }
+        [JsonProperty("url")] public string? Url { get; set; }
+
+
+        public override string ToString()
         {
-            public string? name { get; set; }
-            public int? index { get; set; }
+            return Version ?? string.Empty;
         }
+    }
 
-        public class CustomExecutor
+    [JsonProperty("name")] public string? Name { get; set; }
+
+    [JsonProperty("version")] public string? Version { get; set; }
+
+    [JsonProperty("url")] public string? Url { get; set; }
+    [JsonProperty("resource")] public List<MaaCustomResource>? Resource { get; set; }
+    [JsonProperty("task")] public List<TaskInterfaceItem>? Task { get; set; }
+    [JsonProperty("recognition")] public Dictionary<string, CustomExecutor>? Recognition { get; set; }
+    [JsonProperty("action")] public Dictionary<string, CustomExecutor>? Action { get; set; }
+    [JsonProperty("option")] public Dictionary<string, MaaInterfaceOption>? Option { get; set; }
+
+    private static MaaInterface? _instance;
+
+    // [JsonIgnore] public List<MaaCustomRecognizerExecutor> CustomRecognizerExecutors { get; } = new();
+    //
+    // [JsonIgnore] public List<MaaCustomActionExecutor> CustomActionExecutors { get; } = new();
+
+    [JsonIgnore] public Dictionary<string, List<string>> Resources { get; } = new();
+
+    // 替换单个字符串中的 "{PROJECT_DIR}" 为指定的替换值
+    public static string ReplacePlaceholder(string? input, string replacement)
+    {
+        return string.IsNullOrEmpty(input) ? string.Empty : input.Replace("{PROJECT_DIR}", replacement);
+    }
+
+    // 替换字符串列表中的每个字符串中的 "{PROJECT_DIR}"
+    public static List<string> ReplacePlaceholder(List<string>? inputs, string replacement)
+    {
+        if (inputs == null) return new List<string>();
+
+        return inputs.ConvertAll(input => ReplacePlaceholder(input, replacement));
+    }
+
+    public static MaaInterface? Instance
+    {
+        get => _instance;
+        set
         {
-            [JsonIgnore] public string? name { get; set; }
-            public string? exec_path { get; set; }
+            _instance = value;
+            if (value == null) return;
 
-            [JsonConverter(typeof(SingleOrListConverter))]
-            public List<string>? exec_param { get; set; }
-        }
+            // _instance?.CustomRecognizerExecutors.Clear();
+            // _instance?.CustomActionExecutors.Clear();
+            _instance?.Resources.Clear();
 
-        public class MaaCustomResource
-        {
-            public string? name { get; set; }
+            // if (value.recognizer != null)
+            // {
+            //     foreach (var customExecutor in value.recognizer)
+            //     {
+            //         _instance?.CustomRecognizerExecutors.Add(new Maacustom
+            //         {
+            //             Name = customExecutor.Key,
+            //             Path = ReplacePlaceholder(customExecutor.Value.exec_path, MaaProcessor.Resource),
+            //             Parameter = ReplacePlaceholder(customExecutor.Value.exec_param, MaaProcessor.Resource)
+            //         });
+            //     }
+            // }
+            //
+            // if (value.action != null)
+            // {
+            //     foreach (var customExecutor in value.action)
+            //     {
+            //         _instance?.CustomActionExecutors.Add(new MaaCustomActionExecutor
+            //         {
+            //             Name = customExecutor.Key,
+            //             Path = ReplacePlaceholder(customExecutor.Value.exec_path, MaaProcessor.Resource),
+            //             Parameter = ReplacePlaceholder(customExecutor.Value.exec_param, MaaProcessor.Resource)
+            //         });
+            //     }
+            // }
 
-            [JsonConverter(typeof(SingleOrListConverter))]
-            public List<string>? path { get; set; }
-        }
-
-        public List<MaaCustomResource>? resource { get; set; }
-        public List<TaskInterfaceItem>? task { get; set; }
-        public Dictionary<string, CustomExecutor>? recognizer { get; set; }
-        public Dictionary<string, CustomExecutor>? action { get; set; }
-        public Dictionary<string, MaaInterfaceOption>? option { get; set; }
-
-        private static MaaInterface? _instance;
-
-        [JsonIgnore] public List<MaaCustomRecognizerExecutor> CustomRecognizerExecutors { get; } = new();
-
-        [JsonIgnore] public List<MaaCustomActionExecutor> CustomActionExecutors { get; } = new();
-
-        [JsonIgnore] public Dictionary<string, List<string>> Resources { get; } = new();
-
-        // 替换单个字符串中的 "{PROJECT_DIR}" 为指定的替换值
-        public static string ReplacePlaceholder(string? input, string replacement)
-        {
-            return string.IsNullOrEmpty(input) ? string.Empty : input.Replace("{PROJECT_DIR}", replacement);
-        }
-
-        // 替换字符串列表中的每个字符串中的 "{PROJECT_DIR}"
-        public static List<string> ReplacePlaceholder(List<string>? inputs, string replacement)
-        {
-            if (inputs == null) return new List<string>();
-
-            return inputs.ConvertAll(input => ReplacePlaceholder(input, replacement));
-        }
-
-        public static MaaInterface? Instance
-        {
-            get => _instance;
-            set
+            if (value.Resource != null)
             {
-                _instance = value;
-                if (value == null) return;
-
-                _instance?.CustomRecognizerExecutors.Clear();
-                _instance?.CustomActionExecutors.Clear();
-                _instance?.Resources.Clear();
-
-                if (value.recognizer != null)
+                foreach (var customResource in value.Resource)
                 {
-                    foreach (var customExecutor in value.recognizer)
-                    {
-                        _instance?.CustomRecognizerExecutors.Add(new MaaCustomRecognizerExecutor
-                        {
-                            Name = customExecutor.Key,
-                            Path = ReplacePlaceholder(customExecutor.Value.exec_path, MaaProcessor.Resource),
-                            Parameter = ReplacePlaceholder(customExecutor.Value.exec_param, MaaProcessor.Resource)
-                        });
-                    }
-                }
-
-                if (value.action != null)
-                {
-                    foreach (var customExecutor in value.action)
-                    {
-                        _instance?.CustomActionExecutors.Add(new MaaCustomActionExecutor
-                        {
-                            Name = customExecutor.Key,
-                            Path = ReplacePlaceholder(customExecutor.Value.exec_path, MaaProcessor.Resource),
-                            Parameter = ReplacePlaceholder(customExecutor.Value.exec_param, MaaProcessor.Resource)
-                        });
-                    }
-                }
-
-                if (value.resource != null)
-                {
-                    foreach (var customResource in value.resource)
-                    {
-                        var paths = ReplacePlaceholder(customResource.path ?? new List<string>(),
-                            AppDomain.CurrentDomain.BaseDirectory);
-                        if (_instance != null)
-                            _instance.Resources[customResource.name ?? string.Empty] = paths;
-                    }
+                    var paths = ReplacePlaceholder(customResource.Path ?? new List<string>(),
+                        AppDomain.CurrentDomain.BaseDirectory);
+                    if (_instance != null)
+                        _instance.Resources[customResource.Name ?? string.Empty] = paths;
                 }
             }
+
         }
+    }
+
+    public override string ToString()
+    {
+        var settings = new JsonSerializerSettings
+        {
+            Formatting = Formatting.Indented,
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore
+        };
+
+        return JsonConvert.SerializeObject(this, settings);
     }
 }

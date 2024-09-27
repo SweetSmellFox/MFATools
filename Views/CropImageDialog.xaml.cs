@@ -17,7 +17,13 @@ public partial class CropImageDialog
     private Rectangle? _selectionRectangle;
 
     public string? Output { get; set; }
-    public List<int>? OutputRoi { get; set; }
+    private List<int>? _outputRoi { get; set; }
+
+    public List<int>? OutputRoi
+    {
+        get => _outputRoi;
+        set => _outputRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
+    }
 
     public CropImageDialog(BitmapImage bitmapImage)
     {
@@ -232,7 +238,7 @@ public partial class CropImageDialog
                 return new PngBitmapEncoder();
         }
     }
-    
+
     private void Load(object sender, RoutedEventArgs e)
     {
         OpenFileDialog openFileDialog = new OpenFileDialog
@@ -240,7 +246,7 @@ public partial class CropImageDialog
             Title = "LoadImageTitle".GetLocalizationString()
         };
         openFileDialog.Filter = "ImageFilter".GetLocalizationString();
-        
+
         if (openFileDialog.ShowDialog() == true)
         {
             try

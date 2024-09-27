@@ -1,111 +1,490 @@
-﻿using System.Reflection;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.Mvvm.ComponentModel;
+using HandyControl.Controls;
 using MFATools.Utils.Converters;
 using Newtonsoft.Json;
 
 namespace MFATools.Utils;
 
-public class TaskModel
+public class TaskModel : ObservableObject
 {
-    [JsonIgnore] public string name { get; set; } = "未命名";
+    private string _name = "未命名";
+    private string? _recognition;
+    private string? _action;
+    private List<string>? _next;
+    private List<string>? _interrupt;
+    private List<string>? _on_error;
+    private bool? _is_sub;
+    private bool? _inverse;
+    private bool? _enabled;
+    private uint? _timeout;
+    private List<string>? _timeout_next;
+    private uint? _times_limit;
+    private List<string>? _runout_next;
+    private uint? _pre_delay;
+    private uint? _post_delay;
+    private uint? _rate_limit;
+    private object? _pre_wait_freezes;
+    private object? _post_wait_freezes;
+    private bool? _focus;
+    private List<string>? _focus_tip;
+    private List<string>? _focus_tip_color;
+    private List<string>? _expected;
+    private List<string[]>? _replace;
+    private bool? _only_rec;
+    private List<string>? _labels;
+    private string? _model;
+    private object? _target;
+    private List<int>? _target_offset;
+    private object? _begin;
+    private List<int>? _begin_offset;
+    private object? _end;
+    private List<int>? _end_offset;
+    private uint? _duration;
+    private List<int>? _key;
+    private string? _input_text;
+    private string? _package;
+    private string? _custom_recognition;
+    private string? _custom_recognition_param;
+    private string? _custom_action;
+    private string? _custom_action_param;
+    private string? _order_by;
+    private int? _index;
+    private int? _method;
+    private int? _count;
+    private bool? _green_mask;
+    private string? _detector;
+    private double? _ratio;
+    private List<string>? _template;
+    private object? _roi;
+    private object? _roi_offset;
+    private object? _threshold;
+    private object? _lower;
+    private object? _upper;
+    private bool? _connected;
 
-    // 任务属性
-    public string? recognition { get; set; }
-    public string? action { get; set; }
+    [Browsable(false)]
+    [JsonIgnore]
+    [JsonProperty("name")]
+    public string Name
+    {
+        get => _name;
+        set => SetNewProperty(ref _name, value);
+    }
 
+    [JsonProperty("recognition")]
+    [Category("基础属性")]
+    public string? Recognition
+    {
+        get => _recognition;
+        set => SetNewProperty(ref _recognition, value);
+    }
+
+    [JsonProperty("action")]
+    [Category("基础属性")]
+    public string? Action
+    {
+        get => _action;
+        set => SetNewProperty(ref _action, value);
+    }
+
+    [JsonProperty("next")]
+    [Category("基础属性")]
     [JsonConverter(typeof(SingleOrListConverter))]
-    public List<string>? next { get; set; }
+    public List<string>? Next
+    {
+        get => _next;
+        set => SetNewProperty(ref _next, value);
+    }
 
-    public bool? is_sub { get; set; }
-    public bool? inverse { get; set; }
-    public bool? enabled { get; set; }
-    public uint? timeout { get; set; }
-
+    [JsonProperty("interrupt")]
+    [Category("基础属性")]
     [JsonConverter(typeof(SingleOrListConverter))]
-    public List<string>? timeout_next { get; set; }
+    public List<string>? Interrupt
+    {
+        get => _interrupt;
+        set => SetNewProperty(ref _interrupt, value);
+    }
 
-    public uint? times_limit { get; set; }
+    [JsonProperty("timeout")]
+    [Category("基础属性")]
+    public uint? Timeout
+    {
+        get => _timeout;
+        set => SetNewProperty(ref _timeout, value);
+    }
 
+    [JsonProperty("on_error")]
+    [Category("基础属性")]
     [JsonConverter(typeof(SingleOrListConverter))]
-    public List<string>? runout_next { get; set; }
+    public List<string>? OnError
+    {
+        get => _on_error;
+        set => SetNewProperty(ref _on_error, value);
+    }
 
-    public uint? pre_delay { get; set; }
-    public uint? post_delay { get; set; }
-    public object? pre_wait_freezes { get; set; }
-    public object? post_wait_freezes { get; set; }
-    public bool? focus { get; set; }
+    [JsonProperty("inverse")]
+    [Category("基础属性")]
+    [Editor(typeof(SwitchPropertyEditor), typeof(SwitchPropertyEditor))]
+    public bool? Inverse
+    {
+        get => _inverse;
+        set => SetNewProperty(ref _inverse, value);
+    }
 
+    [JsonProperty("enabled")]
+    [Category("基础属性")]
+    [Editor(typeof(SwitchPropertyEditor), typeof(SwitchPropertyEditor))]
+    public bool? Enabled
+    {
+        get => _enabled;
+        set => SetNewProperty(ref _enabled, value);
+    }
+
+    [JsonProperty("pre_delay")]
+    [Category("基础属性")]
+    public uint? PreDelay
+    {
+        get => _pre_delay;
+        set => SetNewProperty(ref _pre_delay, value);
+    }
+
+    [JsonProperty("post_delay")]
+    [Category("基础属性")]
+    public uint? PostDelay
+    {
+        get => _post_delay;
+        set => SetNewProperty(ref _post_delay, value);
+    }
+
+    [JsonProperty("pre_wait_freezes")]
+    [Category("延时设置")]
+    [JsonConverter(typeof(UIntOrObjectConverter))]
+    public object? PreWaitFreezes
+    {
+        get => _pre_wait_freezes;
+        set => SetNewProperty(ref _pre_wait_freezes, value);
+    }
+
+    [JsonProperty("post_wait_freezes")]
+    [Category("延时设置")]
+    [JsonConverter(typeof(UIntOrObjectConverter))]
+    public object? PostWaitFreezes
+    {
+        get => _post_wait_freezes;
+        set => SetNewProperty(ref _post_wait_freezes, value);
+    }
+
+    [JsonProperty("focus")]
+    [Category("任务回调")]
+    [Editor(typeof(SwitchPropertyEditor), typeof(SwitchPropertyEditor))]
+    public bool? Focus
+    {
+        get => _focus;
+        set => SetNewProperty(ref _focus, value);
+    }
+
+    [JsonProperty("focus_tip")]
+    [Category("任务回调")]
     [JsonConverter(typeof(SingleOrListConverter))]
-    public List<string>? focus_tip { get; set; }
+    public List<string>? FocusTip
+    {
+        get => _focus_tip;
+        set => SetNewProperty(ref _focus_tip, value);
+    }
 
+    [JsonProperty("focus_tip_color")]
+    [Category("任务回调")]
     [JsonConverter(typeof(SingleOrListConverter))]
-    public List<string>? focus_tip_color { get; set; }
+    public List<string>? FocusTipColor
+    {
+        get => _focus_tip_color;
+        set => SetNewProperty(ref _focus_tip_color, value);
+    }
 
-    // Action-specific properties
+    [JsonProperty("roi")]
+    [Category("识别器")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public object? Roi
+    {
+        get => _roi;
+        set => SetNewProperty(ref _roi, value);
+    }
+
+    [JsonProperty("roi_offset")]
+    [Category("识别器")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public object? RoiOffset
+    {
+        get => _roi_offset;
+        set => SetNewProperty(ref _roi_offset, value);
+    }
+
+    [JsonProperty("template")]
+    [Category("识别器")]
     [JsonConverter(typeof(SingleOrListConverter))]
-    public List<string>? expected { get; set; }
+    public List<string>? Template
+    {
+        get => _template;
+        set => SetNewProperty(ref _template, value);
+    }
 
-    public bool? only_rec { get; set; }
+    [JsonProperty("threshold")]
+    [Category("识别器")]
+    [JsonConverter(typeof(SingleOrDoubleListConverter))]
+    public object? Threshold
+    {
+        get => _threshold;
+        set => SetNewProperty(ref _threshold, value);
+    }
 
-    public List<string>? labels { get; set; }
-    public string? model { get; set; }
+    [JsonProperty("order_by")]
+    [Category("识别器")]
+    public string? OrderBy
+    {
+        get => _order_by;
+        set => SetNewProperty(ref _order_by, value);
+    }
 
-    [JsonConverter(typeof(TrueStringOrArrayConverter))]
-    public object? target { get; set; }
+    [JsonProperty("index")]
+    [Category("识别器")]
+    public int? Index
+    {
+        get => _index;
+        set => SetNewProperty(ref _index, value);
+    }
 
-    public List<int>? target_offset { get; set; }
+    [JsonProperty("method")]
+    [Category("识别器")]
+    public int? Method
+    {
+        get => _method;
+        set => SetNewProperty(ref _method, value);
+    }
 
-    [JsonConverter(typeof(TrueStringOrArrayConverter))]
-    public object? begin { get; set; }
+    [JsonProperty("green_mask")]
+    [Category("识别器")]
+    public bool? GreenMask
+    {
+        get => _green_mask;
+        set => SetNewProperty(ref _green_mask, value);
+    }
 
-    public List<int>? begin_offset { get; set; }
+    [JsonProperty("count")]
+    [Category("识别器")]
+    public int? Count
+    {
+        get => _count;
+        set => SetNewProperty(ref _count, value);
+    }
 
-    [JsonConverter(typeof(TrueStringOrArrayConverter))]
-    public object? end { get; set; }
+    [JsonProperty("detector")]
+    [Category("识别器")]
+    public string? Detector
+    {
+        get => _detector;
+        set => SetNewProperty(ref _detector, value);
+    }
 
-    public List<int>? end_offset { get; set; }
+    [JsonProperty("ratio")]
+    [Category("识别器")]
+    public double? Ratio
+    {
+        get => _ratio;
+        set => SetNewProperty(ref _ratio, value);
+    }
 
-    public uint? duration { get; set; }
+    [JsonProperty("lower")]
+    [Category("识别器")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public object? Lower
+    {
+        get => _lower;
+        set => SetNewProperty(ref _lower, value);
+    }
 
+    [JsonProperty("upper")]
+    [Category("识别器")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public object? Upper
+    {
+        get => _upper;
+        set => SetNewProperty(ref _upper, value);
+    }
+
+    [JsonProperty("connected")]
+    [Category("识别器")]
+    [Editor(typeof(SwitchPropertyEditor), typeof(SwitchPropertyEditor))]
+    public bool? Connected
+    {
+        get => _connected;
+        set => SetNewProperty(ref _connected, value);
+    }
+
+    [JsonProperty("expected")]
+    [Category("识别器")]
+    [JsonConverter(typeof(SingleOrListConverter))]
+    public List<string>? Expected
+    {
+        get => _expected;
+        set => SetNewProperty(ref _expected, value);
+    }
+
+    [JsonProperty("replace")]
+    [Category("识别器")]
+    [JsonConverter(typeof(ReplaceConverter))]
+    public List<string[]>? Replace
+    {
+        get => _replace;
+        set => SetNewProperty(ref _replace, value);
+    }
+
+    [JsonProperty("only_rec")]
+    [Category("识别器")]
+    public bool? OnlyRec
+    {
+        get => _only_rec;
+        set => SetNewProperty(ref _only_rec, value);
+    }
+
+    [JsonProperty("model")]
+    [Category("识别器")]
+    public string? Model
+    {
+        get => _model;
+        set => SetNewProperty(ref _model, value);
+    }
+
+    [JsonProperty("labels")]
+    [Category("识别器")]
+    public List<string>? Labels
+    {
+        get => _labels;
+        set => SetNewProperty(ref _labels, value);
+    }
+
+    [JsonProperty("custom_recognition")]
+    [Category("自定义")]
+    public string? CustomRecognition
+    {
+        get => _custom_recognition;
+        set => SetNewProperty(ref _custom_recognition, value);
+    }
+
+    [JsonProperty("custom_recognition_param")]
+    [Category("自定义")]
+    public string? CustomRecognitionParam
+    {
+        get => _custom_recognition_param;
+        set => SetNewProperty(ref _custom_recognition_param, value);
+    }
+
+    [JsonProperty("custom_action")]
+    [Category("自定义")]
+    public string? CustomAction
+    {
+        get => _custom_action;
+        set => SetNewProperty(ref _custom_action, value);
+    }
+
+    [JsonProperty("custom_action_param")]
+    [Category("自定义")]
+    public string? CustomActionParam
+    {
+        get => _custom_action_param;
+        set => SetNewProperty(ref _custom_action_param, value);
+    }
+
+    [JsonProperty("target")]
+    [Category("动作")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public object? Target
+    {
+        get => _target;
+        set => SetNewProperty(ref _target, value);
+    }
+
+    [JsonProperty("target_offset")]
+    [Category("动作")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public List<int>? TargetOffset
+    {
+        get => _target_offset;
+        set => SetNewProperty(ref _target_offset, value);
+    }
+
+    [JsonProperty("begin")]
+    [Category("动作")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public object? Begin
+    {
+        get => _begin;
+        set => SetNewProperty(ref _begin, value);
+    }
+
+    [JsonProperty("begin_offset")]
+    [Category("动作")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public List<int>? BeginOffset
+    {
+        get => _begin_offset;
+        set => SetNewProperty(ref _begin_offset, value);
+    }
+
+    [JsonProperty("end")]
+    [Category("动作")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public object? End
+    {
+        get => _end;
+        set => SetNewProperty(ref _end, value);
+    }
+
+    [JsonProperty("end_offset")]
+    [Category("动作")]
+    [JsonConverter(typeof(SingleOrNestedListConverter))]
+    public List<int>? EndOffset
+    {
+        get => _end_offset;
+        set => SetNewProperty(ref _end_offset, value);
+    }
+
+    [JsonProperty("duration")]
+    [Category("动作")]
+    public uint? Duration
+    {
+        get => _duration;
+        set => SetNewProperty(ref _duration, value);
+    }
+
+    [JsonProperty("key")]
+    [Category("动作")]
     [JsonConverter(typeof(SingleOrIntListConverter))]
-    public List<int>? key { get; set; }
+    public List<int>? Key
+    {
+        get => _key;
+        set => SetNewProperty(ref _key, value);
+    }
 
-    public string? input_text { get; set; }
-    public string? package { get; set; }
+    [JsonProperty("input_text")]
+    [Category("动作")]
+    public string? InputText
+    {
+        get => _input_text;
+        set => SetNewProperty(ref _input_text, value);
+    }
 
-    public string? custom_recognition { get; set; }
+    [JsonProperty("package")]
+    [Category("动作")]
+    public string? Package
+    {
+        get => _package;
+        set => SetNewProperty(ref _package, value);
+    }
 
-    public string? custom_recognition_param { get; set; }
-    public string? custom_action { get; set; }
-    public string? custom_action_param { get; set; }
-
-    public string? order_by { get; set; }
-
-    public int? index { get; set; }
-
-    public int? method { get; set; }
-
-    public int? count { get; set; }
-
-    public bool? green_mask { get; set; }
-
-    public string? detector { get; set; }
-    public double? ratio { get; set; }
-
-    [JsonConverter(typeof(SingleOrListConverter))]
-    public List<string>? template { get; set; }
-
-    [JsonConverter(typeof(SingleOrNestedListConverter))]
-    public object? roi { get; set; }
-
-    public double? threshold { get; set; }
-
-    [JsonConverter(typeof(SingleOrNestedListConverter))]
-    public object? lower { get; set; }
-
-    [JsonConverter(typeof(SingleOrNestedListConverter))]
-    public object? upper { get; set; }
-
-    public bool? connected { get; set; }
 
     public override string ToString()
     {
@@ -116,7 +495,7 @@ public class TaskModel
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
 
-        string json = JsonConvert.SerializeObject(this, settings);
+        var json = JsonConvert.SerializeObject(this, settings);
         return json;
     }
 
@@ -139,7 +518,7 @@ public class TaskModel
         foreach (var property in properties)
         {
             PropertyInfo? propInfo =
-                this.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.Instance);
+                GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.Instance);
             if (propInfo != null && propInfo.CanWrite)
             {
                 propInfo.SetValue(this, property.Value);
@@ -179,58 +558,52 @@ public class TaskModel
 
     public TaskModel Reset()
     {
-        name = "未命名";
-        recognition = null;
-        action = null;
-        next = null;
-        is_sub = null;
-        inverse = null;
-        enabled = null;
-        timeout = null;
-        timeout_next = null;
-        times_limit = null;
-        runout_next = null;
-        pre_delay = null;
-        post_delay = null;
-        pre_wait_freezes = null;
-        post_wait_freezes = null;
-        focus = null;
-        focus_tip = null;
-        focus_tip_color = null;
-        expected = null;
-        only_rec = null;
-        labels = null;
-        model = null;
-        target = null;
-        target_offset = null;
-        begin = null;
-        begin_offset = null;
-        end = null;
-        end_offset = null;
-        duration = null;
-        key = null;
-        input_text = null;
-        package = null;
-        custom_recognition = null;
-        custom_recognition_param = null;
-        custom_action = null;
-        custom_action_param = null;
-        order_by = null;
-        index = null;
-        method = null;
-        count = null;
-        green_mask = null;
-        detector = null;
-        ratio = null;
-        template = null;
-        roi = null;
-        threshold = null;
-        lower = null;
-        upper = null;
-        connected = null;
+        var properties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(prop => prop.CanWrite);
+
+        foreach (var prop in properties)
+        {
+            var propType = prop.PropertyType;
+
+            if (propType.IsValueType)
+            {
+                if (Nullable.GetUnderlyingType(propType) != null)
+                {
+                    prop.SetValue(this, null);
+                }
+                else
+                {
+                    object defaultValue = Activator.CreateInstance(propType)!;
+                    prop.SetValue(this, defaultValue);
+                }
+            }
+            else
+            {
+                if (prop.Name.Equals(nameof(Name), StringComparison.OrdinalIgnoreCase))
+                {
+                    prop.SetValue(this, "未命名");
+                }
+                else
+                {
+                    prop.SetValue(this, null);
+                }
+            }
+        }
+
         return this;
     }
 
+    protected bool SetNewProperty<T>([NotNullIfNotNull(nameof(newValue))] ref T field, T newValue,
+        [CallerMemberName] string? propertyName = null)
+    {
+        OnPropertyChanging(propertyName);
+
+        field = newValue;
+
+        OnPropertyChanged(propertyName);
+
+        return true;
+    }
 
     public List<Attribute> ToAttributeList()
     {
