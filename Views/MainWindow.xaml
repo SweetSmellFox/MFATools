@@ -55,20 +55,18 @@
             <StackPanel Grid.Column="0"
                         HorizontalAlignment="Left" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center" Margin="6 0 4 0" Text="{lex:Loc AppTitle}"
+                           IsHitTestVisible="False"
                            Foreground="{DynamicResource PrimaryTextBrush}">
 
                 </TextBlock>
-                <TextBlock VerticalAlignment="Center" Foreground="{StaticResource GrayColor1}"
+                <TextBlock VerticalAlignment="Center" Foreground="{StaticResource GrayColor1}" IsHitTestVisible="False"
                            Margin="2 0 4 0" x:Name="version" Text="Debug">
                 </TextBlock>
             </StackPanel>
 
-            <Button Grid.Column="1" x:Name="btnPin" Padding="0 -2 0 0" Width="42"
-                    Content="📌" Click="ToggleWindowTopMost"
-                    Style="{StaticResource PushpinButtonStyle}"
-                    Foreground="{Binding WindowTopMostButtonForeground}">
-
-            </Button>
+            <controls:PinButton Grid.Column="1" x:Name="btnPin" Padding="0 -2 0 0" Width="42"
+                                Content="📌" CheckedChanged="ToggleWindowTopMost">
+            </controls:PinButton>
         </Grid>
     </hc:Window.NonClientAreaContent>
     <Grid>

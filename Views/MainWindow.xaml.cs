@@ -91,14 +91,9 @@ public partial class MainWindow
     }
 
 
-    private void ToggleWindowTopMost(object sender, RoutedEventArgs e)
+    private void ToggleWindowTopMost(object sender, RoutedPropertyChangedEventArgs<bool> e)
     {
-        if (Data == null) return;
-        Topmost = !Topmost;
-        if (Topmost)
-            Data.WindowTopMostButtonForeground = FindResource("PrimaryBrush") as Brush ?? Brushes.DarkGray;
-        else
-            Data.WindowTopMostButtonForeground = FindResource("ActionIconColor") as Brush ?? Brushes.DarkGray;
+        Topmost = e.NewValue;
     }
 
     private void TabControl_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
