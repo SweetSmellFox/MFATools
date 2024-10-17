@@ -38,7 +38,7 @@
 
     <!-- 添加以下资源项 -->
     <data name="AppTitle" xml:space="preserve">
-        <value>Maa小工具</value>
+        <value>MFA 小工具</value>
     </data>
     <data name="TabADB" xml:space="preserve">
         <value>ADB</value>
