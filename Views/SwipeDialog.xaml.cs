@@ -31,22 +31,26 @@ public partial class SwipeDialog
         private set => _outputEnd = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
 
-    public SwipeDialog(BitmapImage bitmapImage)
+    public SwipeDialog()
     {
         InitializeComponent();
-        UpdateImage(bitmapImage);
+        Task.Run(() =>
+        {
+            var image = MaaProcessor.Instance.GetBitmapImage();
+            Growls.Process(() => { UpdateImage(image); });
+        });
     }
 
-    private double _scaleRatio;
-    private double _originWidth;
-    private double _originHeight;
-
-    private void UpdateImage(BitmapImage imageSource)
+    public void UpdateImage(BitmapImage? _imageSource)
     {
-        image.Source = imageSource;
+        if (_imageSource == null)
+            return;
+        LoadingCircle.Visibility = Visibility.Collapsed;
+        ImageArea.Visibility = Visibility.Visible;
+        image.Source = _imageSource;
 
-        _originWidth = imageSource.PixelWidth;
-        _originHeight = imageSource.PixelHeight;
+        _originWidth = _imageSource.PixelWidth;
+        _originHeight = _imageSource.PixelHeight;
 
         double maxWidth = image.MaxWidth;
         double maxHeight = image.MaxHeight;
@@ -62,7 +66,13 @@ public partial class SwipeDialog
         SelectionCanvas.Height = image.Height;
         Width = image.Width + 20;
         Height = image.Height + 100;
+        CenterWindow();
     }
+
+    private double _scaleRatio;
+    private double _originWidth;
+    private double _originHeight;
+
 
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
     {

@@ -307,9 +307,12 @@ public partial class MainWindow
     /// <param name="content">要添加的内容</param>
     public void AppendLog(Attribute? content)
     {
-        TagContainer.Items.Add(new AttributeTag(content)
+        Growls.Process(() =>
         {
-            Margin = new Thickness(2)
+            TagContainer.Items.Add(new AttributeTag(content)
+            {
+                Margin = new Thickness(2)
+            });
         });
     }
 
@@ -323,75 +326,55 @@ public partial class MainWindow
 
     private void SelectionRegion(object sender, RoutedEventArgs e)
     {
-        var image = MaaProcessor.Instance.GetBitmapImage();
-        if (image != null)
+        SelectionRegionDialog selectionRegionDialog = new SelectionRegionDialog();
+        if (selectionRegionDialog.ShowDialog() == true)
         {
-            SelectionRegionDialog selectionRegionDialog = new SelectionRegionDialog(image);
-            if (selectionRegionDialog.ShowDialog() == true)
-            {
-                AppendLog(selectionRegionDialog.IsRoi
-                    ? new Attribute("roi", selectionRegionDialog.Output)
-                    : new Attribute("target", selectionRegionDialog.Output));
-            }
+            AppendLog(selectionRegionDialog.IsRoi
+                ? new Attribute("roi", selectionRegionDialog.Output)
+                : new Attribute("target", selectionRegionDialog.Output));
         }
     }
 
     private void Screenshot(object sender, RoutedEventArgs e)
     {
-        var image = MaaProcessor.Instance.GetBitmapImage();
-        if (image != null)
+        CropImageDialog cropImageDialog = new CropImageDialog();
+        if (cropImageDialog.ShowDialog() == true)
         {
-            CropImageDialog cropImageDialog = new CropImageDialog(image);
-            if (cropImageDialog.ShowDialog() == true)
-            {
-                AppendLog(new Attribute("template", cropImageDialog.Output));
-                AppendLog(new Attribute("recommended roi", cropImageDialog.OutputRoi));
-            }
+            AppendLog(new Attribute("template", cropImageDialog.Output));
+            AppendLog(new Attribute("recommended roi", cropImageDialog.OutputRoi));
         }
     }
 
     private void Swipe(object sender, RoutedEventArgs e)
     {
-        var image = MaaProcessor.Instance.GetBitmapImage();
-        if (image != null)
+        SwipeDialog swipeDialog = new SwipeDialog();
+        if (swipeDialog.ShowDialog() == true)
         {
-            SwipeDialog swipeDialog = new SwipeDialog(image);
-            if (swipeDialog.ShowDialog() == true)
-            {
-                AppendLog(new Attribute("begin", swipeDialog.OutputBegin));
-                AppendLog(new Attribute("end", swipeDialog.OutputEnd));
-            }
+            AppendLog(new Attribute("begin", swipeDialog.OutputBegin));
+            AppendLog(new Attribute("end", swipeDialog.OutputEnd));
         }
     }
 
     private void ColorExtraction(object sender, RoutedEventArgs e)
     {
-        var image = MaaProcessor.Instance.GetBitmapImage();
-        if (image != null)
+        ColorExtractionDialog colorExtractionDialog = new ColorExtractionDialog();
+        if (colorExtractionDialog.ShowDialog() == true)
         {
-            ColorExtractionDialog colorExtractionDialog = new ColorExtractionDialog(image);
-            if (colorExtractionDialog.ShowDialog() == true)
-            {
-                AppendLog(new Attribute("upper", colorExtractionDialog.OutputUpper));
-                AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
-                AppendLog(new Attribute("recommended roi", colorExtractionDialog.OutputRoi));
-            }
+            AppendLog(new Attribute("upper", colorExtractionDialog.OutputUpper));
+            AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
+            AppendLog(new Attribute("recommended roi", colorExtractionDialog.OutputRoi));
         }
     }
 
     private void RecognitionText(object sender, RoutedEventArgs e)
     {
-        var image = MaaProcessor.Instance.GetBitmapImage();
-        if (image != null)
+        RecognitionTextDialog recognition = new RecognitionTextDialog();
+        if (recognition.ShowDialog() == true && recognition.Output != null)
         {
-            RecognitionTextDialog recognition = new RecognitionTextDialog(image);
-            if (recognition.ShowDialog() == true && recognition.Output != null)
-            {
-                AppendLog(new Attribute("expected",
-                    OCRHelper.ReadTextFromMAATasker(recognition.Output[0], recognition.Output[1],
-                        recognition.Output[2], recognition.Output[3])));
-                AppendLog(new Attribute("recommended roi", recognition.OutputRoi));
-            }
+            AppendLog(new Attribute("expected",
+                OCRHelper.ReadTextFromMAATasker(recognition.Output[0], recognition.Output[1],
+                    recognition.Output[2], recognition.Output[3])));
+            AppendLog(new Attribute("recommended roi", recognition.OutputRoi));
         }
     }
 

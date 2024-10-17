@@ -25,18 +25,22 @@ public partial class CropImageDialog
         set => _outputRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
 
-    public CropImageDialog(BitmapImage bitmapImage)
+    public CropImageDialog()
     {
         InitializeComponent();
-        UpdateImage(bitmapImage);
+        Task.Run(() =>
+        {
+            var image = MaaProcessor.Instance.GetBitmapImage();
+            Growls.Process(() => { UpdateImage(image); });
+        });
     }
 
-    private double _scaleRatio;
-    private double originWidth;
-    private double originHeight;
-
-    private void UpdateImage(BitmapImage _imageSource)
+    public void UpdateImage(BitmapImage? _imageSource)
     {
+        if (_imageSource == null)
+            return;
+        LoadingCircle.Visibility = Visibility.Collapsed;
+        ImageArea.Visibility = Visibility.Visible;
         image.Source = _imageSource;
 
         originWidth = _imageSource.PixelWidth;
@@ -56,7 +60,12 @@ public partial class CropImageDialog
         SelectionCanvas.Height = image.Height;
         Width = image.Width + 20;
         Height = image.Height + 100;
+        CenterWindow();
     }
+
+    private double _scaleRatio;
+    private double originWidth;
+    private double originHeight;
 
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
@@ -176,6 +185,8 @@ public partial class CropImageDialog
 
     private void SaveCroppedImage(double x, double y, double width, double height)
     {
+        if (width < 1 || !double.IsNormal(width)) width = 1;
+        if (height < 1 || !double.IsNormal(height)) height = 1;
         // 创建BitmapImage对象
         if (image.Source is BitmapImage bitmapImage)
         {

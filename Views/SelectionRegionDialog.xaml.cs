@@ -23,18 +23,27 @@ public partial class SelectionRegionDialog
 
     public bool IsRoi { get; set; }
 
-    public SelectionRegionDialog(BitmapImage bitmapImage)
-    {
-        InitializeComponent();
-        UpdateImage(bitmapImage);
-    }
 
     private double _scaleRatio;
     private double originWidth;
     private double originHeight;
 
-    private void UpdateImage(BitmapImage _imageSource)
+    public SelectionRegionDialog()
     {
+        InitializeComponent();
+        Task.Run(() =>
+        {
+            var image = MaaProcessor.Instance.GetBitmapImage();
+            Growls.Process(() => { UpdateImage(image); });
+        });
+    }
+
+    public void UpdateImage(BitmapImage? _imageSource)
+    {
+        if (_imageSource == null)
+            return;
+        LoadingCircle.Visibility = Visibility.Collapsed;
+        ImageArea.Visibility = Visibility.Visible;
         image.Source = _imageSource;
 
         originWidth = _imageSource.PixelWidth;
@@ -54,6 +63,7 @@ public partial class SelectionRegionDialog
         SelectionCanvas.Height = image.Height;
         Width = image.Width + 20;
         Height = image.Height + 100;
+        CenterWindow();
     }
 
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
