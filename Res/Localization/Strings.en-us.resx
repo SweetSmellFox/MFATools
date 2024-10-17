@@ -437,4 +437,7 @@
     <data name="AdbPath" xml:space="preserve">
         <value>Adb Path</value>
     </data>
+    <data name="AdbConfig" xml:space="preserve">
+        <value>Extras</value>
+    </data>
 </root>

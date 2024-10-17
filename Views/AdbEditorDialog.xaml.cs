@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using MaaFramework.Binding;
 using MFATools.Utils;
 using Microsoft.Win32;
 using Window = HandyControl.Controls.Window;
@@ -7,9 +8,16 @@ namespace MFATools.Views;
 
 public partial class AdbEditorDialog
 {
-    public AdbEditorDialog()
+    public AdbEditorDialog(AdbDeviceInfo info = null)
     {
         InitializeComponent();
+        if (info != null)
+        {
+            AdbName = info.Name;
+            AdbPath = info.AdbPath;
+            AdbSerial = info.AdbSerial;
+            AdbConfig = info.Config;
+        }
     }
 
     private void Load(object sender, RoutedEventArgs e)
@@ -43,7 +51,7 @@ public partial class AdbEditorDialog
             typeof(string),
             typeof(AdbEditorDialog),
             new FrameworkPropertyMetadata(
-                "Simulator".GetLocalizationString(), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                "Emulator".GetLocalizationString(), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
 
     public string AdbName
     {
@@ -78,4 +86,21 @@ public partial class AdbEditorDialog
         get => (string)GetValue(AdbSerialProperty);
         set => SetValue(AdbSerialProperty, value);
     }
+
+    public static readonly DependencyProperty AdbConfigProperty =
+        DependencyProperty.Register(
+            nameof(AdbConfig),
+            typeof(string),
+            typeof(AdbEditorDialog),
+            new FrameworkPropertyMetadata(
+                "{}", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public string AdbConfig
+    {
+        get => (string)GetValue(AdbConfigProperty);
+        set => SetValue(AdbConfigProperty, value);
+    }
+
+    public AdbDeviceInfo Output => new AdbDeviceInfo(Name, AdbPath, AdbSerial, AdbScreencapMethods.Default,
+        AdbInputMethods.MinitouchAndAdbKey, AdbConfig);
 }

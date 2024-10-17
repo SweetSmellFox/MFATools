@@ -152,12 +152,14 @@ public partial class MainWindow
 
     private void CustomAdb(object sender, RoutedEventArgs e)
     {
-        AdbEditorDialog dialog = new AdbEditorDialog();
+        var deviceInfo =
+            deviceComboBox.Items.Count > 0 && deviceComboBox.SelectedItem is AdbDeviceInfo device
+                ? device
+                : null;
+        var dialog = new AdbEditorDialog(deviceInfo);
         if (dialog.ShowDialog().IsTrue())
         {
-            AdbDeviceInfo deviceInfo = new AdbDeviceInfo(dialog.AdbName, dialog.AdbPath, dialog.AdbSerial,
-                AdbScreencapMethods.All, AdbInputMethods.MinitouchAndAdbKey, "{}");
-            deviceComboBox.ItemsSource = new List<AdbDeviceInfo> { deviceInfo };
+            deviceComboBox.ItemsSource = new List<AdbDeviceInfo> { dialog.Output };
             deviceComboBox.SelectedIndex = 0;
             MaaProcessor.Config.IsConnected = true;
         }
