@@ -8,7 +8,7 @@ namespace MFATools.Views;
 
 public partial class AdbEditorDialog
 {
-    public AdbEditorDialog(AdbDeviceInfo info = null)
+    public AdbEditorDialog(AdbDeviceInfo? info = null)
     {
         InitializeComponent();
         if (info != null)
