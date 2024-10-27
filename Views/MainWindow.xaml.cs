@@ -156,6 +156,8 @@ public partial class MainWindow
 
     public void AddLanguageOption(Panel? panel = null, int defaultValue = 0)
     {
+        if (panel == null)
+            return;
         var comboBox = new ComboBox
         {
             Style = FindResource("ComboBoxExtend") as Style,
