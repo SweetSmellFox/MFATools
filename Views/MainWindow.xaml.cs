@@ -19,6 +19,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WPFLocalizeExtension.Extensions;
 using Attribute = MFATools.Utils.Attribute;
+using ComboBox = System.Windows.Controls.ComboBox;
 using ScrollViewer = HandyControl.Controls.ScrollViewer;
 
 
@@ -124,6 +125,100 @@ public partial class MainWindow
         MaaProcessor.Instance.SetCurrentTasker();
     }
 
+    public void AddSettingOption(Panel? panel, string titleKey, IEnumerable<string> options, string datatype,
+        int defaultValue = 0)
+    {
+        var comboBox = new ComboBox
+        {
+            ItemsSource = options,
+            SelectedIndex = DataSet.GetData(datatype, defaultValue),
+            Style = FindResource("ComboBoxExtend") as Style,
+            Margin = new Thickness(5)
+        };
+        var binding = new Binding("Idle")
+        {
+            Source = Data,
+            Mode = BindingMode.OneWay
+        };
+        comboBox.SetBinding(IsEnabledProperty, binding);
+        comboBox.BindLocalization(titleKey);
+        comboBox.SetValue(TitleElement.TitlePlacementProperty, TitlePlacementType.Top);
+        comboBox.SelectionChanged += (sender, _) =>
+        {
+            var index = (sender as ComboBox)?.SelectedIndex ?? 0;
+            DataSet.SetData(datatype, index);
+            MaaProcessor.Instance.SetCurrentTasker();
+            ConnectToMAA();
+        };
+
+        panel?.Children.Add(comboBox);
+    }
+
+    public void AddLanguageOption(Panel? panel = null, int defaultValue = 0)
+    {
+        var comboBox = new ComboBox
+        {
+            Style = FindResource("ComboBoxExtend") as Style,
+            Margin = new Thickness(5)
+        };
+
+        comboBox.ItemsSource = new List<string> { "简体中文", "English" };
+        var binding = new Binding("Idle")
+        {
+            Source = Data,
+            Mode = BindingMode.OneWay
+        };
+        comboBox.SetBinding(IsEnabledProperty, binding);
+        comboBox.BindLocalization("LanguageOption");
+        comboBox.SetValue(TitleElement.TitlePlacementProperty, TitlePlacementType.Top);
+
+        comboBox.SelectionChanged += (sender, _) =>
+        {
+            var index = (sender as ComboBox)?.SelectedIndex ?? 0;
+            LanguageManager.ChangeLanguage(
+                CultureInfo.CreateSpecificCulture(index == 0 ? "zh-cn" : "en-us"));
+            DataSet.SetData("LangIndex", index);
+        };
+
+        comboBox.SelectedIndex = DataSet.GetData("LangIndex", defaultValue);
+        panel.Children.Add(comboBox);
+    }
+
+    public void AddBindSettingOption(Panel? panel, string titleKey, IEnumerable<string> options, string datatype,
+        int defaultValue = 0)
+
+    {
+        var comboBox = new ComboBox
+        {
+            SelectedIndex = DataSet.GetData(datatype, defaultValue),
+            Style = FindResource("ComboBoxExtend") as Style,
+            Margin = new Thickness(5)
+        };
+        var binding = new Binding("Idle")
+        {
+            Source = Data,
+            Mode = BindingMode.OneWay
+        };
+        comboBox.SetBinding(IsEnabledProperty, binding);
+        foreach (var s in options)
+        {
+            var comboBoxItem = new ComboBoxItem();
+            comboBoxItem.BindLocalization(s, ContentProperty);
+            comboBox.Items.Add(comboBoxItem);
+        }
+
+        comboBox.BindLocalization(titleKey);
+        comboBox.SetValue(TitleElement.TitlePlacementProperty, TitlePlacementType.Top);
+        comboBox.SelectionChanged += (sender, _) =>
+        {
+            var index = (sender as ComboBox)?.SelectedIndex ?? 0;
+            DataSet.SetData(datatype, index);
+            MaaProcessor.Instance.SetCurrentTasker();
+        };
+
+        panel?.Children.Add(comboBox);
+    }
+
     private void DeviceComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (deviceComboBox.SelectedItem is DesktopWindowInfo window)
@@ -148,6 +243,12 @@ public partial class MainWindow
     private void Refresh(object sender, RoutedEventArgs e)
     {
         AutoDetectDevice();
+    }
+
+    private void EditSetting(object sender, RoutedEventArgs e)
+    {
+        SettingDialog settingDialog = new();
+        settingDialog.ShowDialog();
     }
 
     private void CustomAdb(object sender, RoutedEventArgs e)
