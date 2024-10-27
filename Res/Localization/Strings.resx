@@ -468,4 +468,13 @@
     <data name="AdbConfig" xml:space="preserve">
         <value>额外参数</value>
     </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>截图</value>
+    </data>
+    <data name="RoiEditor" xml:space="preserve">
+        <value>Roi 编辑器</value>
+    </data>
+    <data name="Back" xml:space="preserve">
+        <value>返回</value>
+    </data>
 </root>

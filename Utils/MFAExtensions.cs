@@ -40,6 +40,13 @@ public static class MFAExtensions
         locExtension.SetBinding(control, property);
     }
 
+    public static int ToNumber(this string? key,int defaultValue = 0)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return defaultValue;
+        return int.TryParse(key, out var result) ? result : defaultValue;
+    }
+
     public static string GetLocalizationString(this string? key)
     {
         if (string.IsNullOrWhiteSpace(key))

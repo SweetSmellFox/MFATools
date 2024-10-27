@@ -70,6 +70,8 @@ public partial class RecognitionTextDialog
 
     private double _scaleRatio;
 
+   
+
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
         var position = e.GetPosition(image);

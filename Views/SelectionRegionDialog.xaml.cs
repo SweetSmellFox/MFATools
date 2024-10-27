@@ -187,6 +187,50 @@ public partial class SelectionRegionDialog
         Close();
     }
 
+    public void DrawRectangle(int x, int y, int width, int height)
+    {
+        if (x < 1 || !double.IsNormal(x)) x = 1;
+        if (y < 1 || !double.IsNormal(y)) y = 1;
+        if (width < 1 || !double.IsNormal(width)) width = 1;
+        if (height < 1 || !double.IsNormal(height)) height = 1;
+        if (x > image.Width) x = (int)image.Width;
+        if (y > image.Height) y = (int)image.Height;
+        if (x + width > image.Width) width = (int)image.Width - x;
+        if (y + height > image.Height) height = (int)image.Height - y;
+        if (_selectionRectangle != null)
+        {
+            SelectionCanvas.Children.Remove(_selectionRectangle);
+        }
+
+        _selectionRectangle = new Rectangle
+        {
+            Stroke = Brushes.Red,
+            StrokeThickness = 2.5,
+            StrokeDashArray = { 2 }
+        };
+
+        var scaledX = x * _scaleRatio;
+        var scaledY = y * _scaleRatio;
+        var scaledWidth = width * _scaleRatio;
+        var scaledHeight = height * _scaleRatio;
+
+        Canvas.SetLeft(_selectionRectangle, scaledX);
+        Canvas.SetTop(_selectionRectangle, scaledY);
+        _selectionRectangle.Width = scaledWidth;
+        _selectionRectangle.Height = scaledHeight;
+
+        SelectionCanvas.Children.Add(_selectionRectangle);
+    }
+
+    private void Edit(object sender, RoutedEventArgs e)
+    {
+        var dialog = new RoiEditorDialog(_selectionRectangle, _scaleRatio);
+        if (dialog.ShowDialog().IsTrue())
+        {
+            DrawRectangle(dialog.X.ToNumber(), dialog.Y.ToNumber(), dialog.W.ToNumber(1), dialog.H.ToNumber(1));
+        }
+    }
+
     private void Load(object sender, RoutedEventArgs e)
     {
         OpenFileDialog openFileDialog = new OpenFileDialog

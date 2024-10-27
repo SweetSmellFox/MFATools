@@ -5,6 +5,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using HandyControl.Controls;
+using HandyControl.Data;
 using MFATools.Utils;
 using MFATools.Controls;
 using Microsoft.Win32;
@@ -35,6 +37,13 @@ public partial class CropImageDialog
         });
     }
 
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+    }
+
+    
+    
     public void UpdateImage(BitmapImage? _imageSource)
     {
         if (_imageSource == null)
@@ -248,6 +257,25 @@ public partial class CropImageDialog
             default:
                 return new PngBitmapEncoder();
         }
+    }
+
+    private void Screenshot(object sender, RoutedEventArgs e)
+    {
+        new Screenshot().Start();
+
+        // if (openFileDialog.ShowDialog() == true)
+        // {
+        //     try
+        //     {
+        //         BitmapImage bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
+        //         UpdateImage(bitmapImage);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         ErrorView errorView = new ErrorView(ex, false);
+        //         errorView.Show();
+        //     }
+        // }
     }
 
     private void Load(object sender, RoutedEventArgs e)

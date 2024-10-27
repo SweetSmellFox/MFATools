@@ -56,10 +56,16 @@
                 </Grid>
             </Viewbox>
             <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal" Margin=" 0 10 0 0">
-                <hc:ComboBox x:Name="SelectType" SelectedIndex="0" Margin="10 0 100 10" Width="100">
+                <hc:ComboBox x:Name="SelectType" SelectedIndex="0" Margin="10 0 70 10" Width="100">
                     <ComboBoxItem>Roi</ComboBoxItem>
                     <ComboBoxItem>Target</ComboBoxItem>
                 </hc:ComboBox>
+                <Button ToolTip="{lex:Loc Edit}" 
+                        Height="30" Margin="10,0,0,10"
+                        Foreground="{DynamicResource GrayColor4}" VerticalContentAlignment="Center"
+                        hc:IconElement.Width="15"
+                        hc:IconElement.Height="15" Click="Edit"
+                        hc:IconElement.Geometry="{StaticResource EditGeometry}" />
                 <Button ToolTip="{lex:Loc Load}"
                         Height="30" Margin="10,0,0,10"
                         Foreground="{DynamicResource GrayColor4}" VerticalContentAlignment="Center"

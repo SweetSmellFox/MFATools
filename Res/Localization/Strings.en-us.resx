@@ -440,4 +440,13 @@
     <data name="AdbConfig" xml:space="preserve">
         <value>Extras</value>
     </data>
+    <data name="Screenshot" xml:space="preserve">
+        <value>Screenshot</value>
+    </data>
+    <data name="RoiEditor" xml:space="preserve">
+        <value>Roi Editor</value>
+    </data>
+    <data name="Back" xml:space="preserve">
+        <value>Back</value>
+    </data>
 </root>
