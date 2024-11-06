@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 
@@ -13,9 +14,24 @@ public partial class RoiEditorDialog
         {
             X = ((int)(Canvas.GetLeft(rectangle) / d)).ToString();
             Y = ((int)(Canvas.GetTop(rectangle) / d)).ToString();
-            W = ((int)(rectangle.Width / d)).ToString();
-            H = ((int)(rectangle.Height / d)).ToString();
+            W = (rectangle.Width / d) >= 0 ? ((int)(rectangle.Width / d)).ToString() : "1";
+            H = (rectangle.Height / d) >= 0 ? ((int)(rectangle.Height / d)).ToString() : "1";
         }
+    }
+
+    static int[] ExtractNumbers(string input)
+    {
+        var matches = Regex.Matches(input, @"\d+")
+            .Cast<Match>()
+            .Select(m => int.Parse(m.Value))
+            .ToList();
+
+        while (matches.Count < 4)
+        {
+            matches.Add(0);
+        }
+
+        return matches.Take(4).ToArray();
     }
 
     private void Save(object sender, RoutedEventArgs e)
@@ -82,5 +98,22 @@ public partial class RoiEditorDialog
     {
         get => (string)GetValue(HProperty);
         set => SetValue(HProperty, value);
+    }
+
+    private void Paste(object sender, RoutedEventArgs e)
+    {
+        if (Clipboard.ContainsText())
+        {
+            var clipboardText = Clipboard.GetText();
+            var lx = ExtractNumbers(clipboardText);
+            xText.Text = lx[0].ToString();
+            yText.Text = lx[1].ToString();
+            wText.Text = lx[2].ToString();
+            hText.Text = lx[3].ToString();
+            X = lx[0].ToString();
+            Y = lx[1].ToString();
+            W = lx[2].ToString();
+            H = lx[3].ToString();
+        }
     }
 }

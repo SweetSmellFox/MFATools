@@ -18,7 +18,7 @@ public partial class SelectionRegionDialog
     public List<int>? Output
     {
         get => _output;
-        set => _output = value?.Select(i => i < 0 ? 0 : i).ToList();
+        set => _output = value?.Select(i => i < 0 ? 1 : i).ToList();
     }
 
     public bool IsRoi { get; set; }

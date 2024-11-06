@@ -449,4 +449,7 @@
     <data name="Back" xml:space="preserve">
         <value>Back</value>
     </data>
+    <data name="ReadFromClipboard" xml:space="preserve">
+        <value>Read from Clipboard</value>
+    </data>
 </root>

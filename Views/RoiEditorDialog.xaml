@@ -12,7 +12,7 @@
            Width="350"
            Height="285"
            MinWidth="350"
-           MinHeight="285"
+           MinHeight="325"
            ResizeMode="CanResize"
            Topmost="True"
            WindowStartupLocation="CenterScreen"
@@ -21,28 +21,30 @@
            Background="{DynamicResource SecundaryBackgroundColor}">
     <Grid>
         <StackPanel Orientation="Vertical">
-            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True" x:Name="xText"
                         Margin="15 15 15 10"
                         Text="{Binding X, RelativeSource={RelativeSource AncestorType=hc:Window}}"
                         hc:InfoElement.TitlePlacement="Left"
                         hc:InfoElement.Title="X" />
-
-            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+ 
+            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True" x:Name="yText"
                         Text="{Binding Y, RelativeSource={RelativeSource AncestorType=hc:Window}}"
                         Margin="15 10 15 10"
-                        hc:InfoElement.TitlePlacement="Left" 
+                        hc:InfoElement.TitlePlacement="Left"
                         hc:InfoElement.Title="Y" />
 
-            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True" x:Name="wText"
                         Text="{Binding W, RelativeSource={RelativeSource AncestorType=hc:Window}}"
                         Margin="15 10 15 10"
                         hc:InfoElement.TitlePlacement="Left"
                         hc:InfoElement.Title="W" />
-            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+            <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True" x:Name="hText"
                         Text="{Binding H, RelativeSource={RelativeSource AncestorType=hc:Window}}"
                         Margin="15 10 15 10"
                         hc:InfoElement.TitlePlacement="Left"
                         hc:InfoElement.Title="H" />
+            <Button HorizontalAlignment="Stretch" Content="{lex:Loc ReadFromClipboard}" Click="Paste"
+                    Margin="15 10 15 10"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10 0 10">
 
                 <Button HorizontalAlignment="Stretch"
