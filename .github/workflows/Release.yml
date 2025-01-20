@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # 匹配以'v'开头的tag
+
+permissions:
+  contents: write  # 给工作流写入仓库内容的权限
+
+jobs:
+  changelog:
+      name: Generate changelog
+      runs-on: ubuntu-latest
+      outputs:
+        release_body: ${{ steps.git-cliff.outputs.content }}
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        - name: Generate a changelog
+          uses: orhun/git-cliff-action@v4
+          id: git-cliff
+          with:
+            config: cliff.toml
+            args: -vv --latest --strip header
+          env:
+            OUTPUT: CHANGES.md
+            GITHUB_REPO: ${{ github.repository }}
+            
+  build:
+    runs-on: ubuntu-latest
+    name: Upload the release
+    needs: changelog
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 获取完整历史记录以访问所有tags  
+
+      - name: .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 8.0.x
+          
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet publish -c Release
+
+      - name: Zip
+        run: |
+          cd /home/runner/work/MFATools/bin/AnyCPU/Release/win-x64/publish/
+          zip -r ../MFATools-${{ github.ref_name }}.zip *  
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            /home/runner/work/MFATools/bin/AnyCPU/Release/win-x64/*.zip
+          body: ${{ needs.changelog.outputs.release_body }}
+          draft: false
+          prerelease: false
