@@ -184,4 +184,5 @@ public class CustomWindow : Window
         this.Left = left;
         this.Top = top;
     }
+    
 }

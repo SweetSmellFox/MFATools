@@ -468,6 +468,12 @@ public partial class MainWindow
             AppendLog(new Attribute("upper", colorExtractionDialog.OutputUpper));
             AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
             AppendLog(new Attribute("recommended roi", colorExtractionDialog.OutputRoi));
+            switch (colorExtractionDialog.SelectType.SelectedIndex)
+            {
+                case 0:AppendLog(new Attribute("method", 4));break;
+                case 1:AppendLog(new Attribute("method", 40));break;
+                case 2:AppendLog(new Attribute("method", 6));break;
+            }
         }
     }
 

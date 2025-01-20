@@ -1,42 +1,35 @@
-﻿<controls:CustomWindow x:Class="MFATools.Views.RecognitionTextDialog"
-                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:hc="https://handyorg.github.io/handycontrol"
-                    xmlns:local="clr-namespace:MFATools.Views" IsResizable="True"
-                    xmlns:controls="clr-namespace:MFATools.Controls"
-                    xmlns:lex="http://wpflocalizeextension.codeplex.com" Height="200" Width="400"
-                    Title="{lex:Loc TextRecognizerTitle}">
-       <Border CornerRadius="10" Background="{DynamicResource WhiteColor}" BorderBrush="{DynamicResource GrayColor10}" BorderThickness="1"  MouseDown="Canvas_MouseDown" >
+﻿<hc:Window x:Class="MFATools.Views.RecognitionTextDialog"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:hc="https://handyorg.github.io/handycontrol"
+           xmlns:local="clr-namespace:MFATools.Views"
+           NonClientAreaBackground="{DynamicResource MainContentBackgroundBrush}" Icon="../logo.ico"
+           xmlns:controls="clr-namespace:MFATools.Controls"
+           xmlns:lex="http://wpflocalizeextension.codeplex.com" Height="200" Width="400"
+           Title="{lex:Loc TextRecognizerTitle}">
+    <Border Background="{DynamicResource WhiteColor}" MouseDown="Canvas_MouseDown">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="40" />
                 <RowDefinition />
                 <RowDefinition Height="60" />
             </Grid.RowDefinitions>
 
-            <Border CornerRadius="10 10 0 0" Background="{DynamicResource MainContentBackgroundBrush}"  x:Name="TitleBar"
-                    ClipToBounds="False">
-                <Grid Height="34">
-                    <TextBlock Text="{lex:Loc TextRecognizerTitle}" VerticalAlignment="Center"  x:Name="TitleText"
-                               Foreground="{StaticResource BlackColor}" IsHitTestVisible="False"
-                               FontWeight="Bold" FontSize="17" HorizontalAlignment="Center"
-                               Margin="0 0 0 0" />
-                    <Button Width="22" Height="22" Click="Close" Style="{StaticResource ButtonIcon}"
-                            x:Name="CloseButton"
-                            Foreground="{DynamicResource PrimaryBrush}"
-                            hc:IconElement.Geometry="{StaticResource ErrorGeometry}"
-                            Padding="0" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0" />
-                </Grid>
-            </Border>
-            <hc:LoadingCircle Grid.Row="1" x:Name="LoadingCircle" Margin="10 5 5 0" Width="50" Height="50" />
-            <Viewbox x:Name="ImageArea" Visibility="Collapsed" Grid.Row="1" HorizontalAlignment="Center">
+            <hc:LoadingCircle Grid.Row="0" x:Name="LoadingCircle" Margin="10 5 5 0" Width="50" Height="50" />
+            <Viewbox x:Name="ImageArea" Visibility="Collapsed" Grid.Row="0" HorizontalAlignment="Center"
+                     MouseUp="Canvas_MouseUp" MouseMove="Canvas_MouseMove" PreviewMouseWheel="Dialog_MouseWheel">
                 <Grid>
                     <Grid>
+                        <Grid.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="sfr" />
+                                <TranslateTransform x:Name="ttf" />
+                            </TransformGroup>
+                        </Grid.RenderTransform>
+
                         <Image Grid.Row="0" Grid.Column="0" x:Name="image" Stretch="Uniform" MaxHeight="720"
                                MaxWidth="1280" />
                         <Canvas Grid.Row="0" Grid.Column="0" x:Name="SelectionCanvas" Background="Transparent"
-                                Panel.ZIndex="1"
-                                MouseMove="Canvas_MouseMove" MouseUp="Canvas_MouseUp" />
+                                Panel.ZIndex="1" />
 
                     </Grid>
                     <TextBlock x:Name="MousePositionText" Foreground="White" Background="Transparent" Panel.ZIndex="2"
@@ -49,7 +42,13 @@
                     </TextBlock>
                 </Grid>
             </Viewbox>
-            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Orientation="Horizontal" Margin=" 0 10 0 0">
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Orientation="Horizontal" Margin=" 0 10 0 0">
+                <Button ToolTip="{lex:Loc Edit}"
+                        Height="30" Margin="10,0,0,10"
+                        Foreground="{DynamicResource GrayColor4}" VerticalContentAlignment="Center"
+                        hc:IconElement.Width="15"
+                        hc:IconElement.Height="15" Click="Edit"
+                        hc:IconElement.Geometry="{StaticResource EditGeometry}" />
                 <Button x:Name="SaveButton"
                         BorderThickness="0"
                         Content="{lex:Loc ButtonSave}" Click="SaveButton_Click"
@@ -85,7 +84,7 @@
                     </Button.Template>
                 </Button>
                 <Button x:Name="CancelButton"
-                        Click="Close"
+                        Click="CancelButton_Click"
                         Content="{lex:Loc ButtonCancel}"
                         Foreground="{DynamicResource BlackColor}"
                         FontSize="11"
@@ -123,4 +122,4 @@
             </StackPanel>
         </Grid>
     </Border>
-</controls:CustomWindow>
+</hc:Window>

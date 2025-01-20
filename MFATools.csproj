@@ -19,8 +19,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Maa.Framework.Native" Version="2.1.2" />
-    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="2.2.0" />
-    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="2.2.0" />
+    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="2.2.2" />
+    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="2.2.2" />
   </ItemGroup>
     <!-- Info -->
     <PropertyGroup>

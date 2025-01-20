@@ -66,53 +66,129 @@ public partial class SwipeDialog
         SelectionCanvas.Height = image.Height;
         Width = image.Width + 20;
         Height = image.Height + 100;
+        RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
         CenterWindow();
     }
 
     private double _scaleRatio;
     private double _originWidth;
     private double _originHeight;
+    private const double ZoomFactor = 1.1; // 缩放因子
+    private Point _dragStartPoint;
+    private bool _isDragging;
 
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+    public void CenterWindow()
+    {
+        var screenWidth = SystemParameters.PrimaryScreenWidth;
+        var screenHeight = SystemParameters.PrimaryScreenHeight;
+
+        var left = (screenWidth - Width) / 2;
+        var top = (screenHeight - Height) / 2;
+
+        this.Left = left;
+        this.Top = top;
+    }
+
+    private void Dialog_MouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        var isCtrlKeyPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+        if (isCtrlKeyPressed)
+        {
+            Point mousePosition = e.GetPosition(SelectionCanvas);
+            double scaleX = sfr.ScaleX;
+            double scaleY = sfr.ScaleY;
+
+            double factor = e.Delta > 0 ? ZoomFactor : 1 / ZoomFactor;
+            scaleX *= factor;
+            scaleY *= factor;
+
+            // 更新缩放比例
+            sfr.ScaleX = scaleX;
+            sfr.ScaleY = scaleY;
+            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
+            // 检查边界
+            CheckZoomBounds(mousePosition, scaleX, scaleY);
+        }
+    }
+
+    private void CheckZoomBounds(Point mousePosition, double scaleX, double scaleY)
+    {
+        double imageWidth = SelectionCanvas.ActualWidth;
+        double imageHeight = SelectionCanvas.ActualHeight;
+
+        if (mousePosition.X >= 0 && mousePosition.X <= imageWidth)
+        {
+            sfr.CenterX = mousePosition.X;
+        }
+        else
+        {
+            sfr.CenterX = imageWidth;
+        }
+
+        if (mousePosition.Y >= 0 && mousePosition.Y <= imageHeight)
+        {
+            sfr.CenterY = mousePosition.Y;
+        }
+        else
+        {
+            sfr.CenterY = imageHeight;
+        }
+    }
 
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (_arrowLine != null)
+        var isCtrlKeyPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+        if (e.LeftButton != MouseButtonState.Pressed)
+            return;
+        if (isCtrlKeyPressed)
         {
-            SelectionCanvas.Children.Remove(_arrowLine);
-            SelectionCanvas.Children.Remove(_arrowHead);
+            _isDragging = true;
+            _dragStartPoint = e.GetPosition(ImageArea);
+            Mouse.Capture(ImageArea);
         }
-
-        // 获取鼠标点击位置
-        var canvasPosition = e.GetPosition(SelectionCanvas);
-        var imagePosition = e.GetPosition(image);
-
-        // 判断点击是否在Image边缘5个像素内
-        if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 &&
-            canvasPosition is { X: > -5, Y: > -5 })
+        else
         {
-            // 如果超出5个像素内，调整点击位置到Image边界
-            imagePosition.X = Math.Max(0, Math.Min(imagePosition.X, image.ActualWidth));
-            imagePosition.Y = Math.Max(0, Math.Min(imagePosition.Y, image.ActualHeight));
-
-            _startPoint = new Point(imagePosition.X + image.Margin.Left, imagePosition.Y + image.Margin.Top);
-
-            _arrowLine = new Line
+            if (_arrowLine != null)
             {
-                Stroke = Brushes.Red,
-                StrokeThickness = 2
-            };
+                SelectionCanvas.Children.Remove(_arrowLine);
+                SelectionCanvas.Children.Remove(_arrowHead);
+            }
 
-            _arrowHead = new Polygon
+            // 获取鼠标点击位置
+            var canvasPosition = e.GetPosition(SelectionCanvas);
+            var imagePosition = e.GetPosition(image);
+
+            // 判断点击是否在Image边缘5个像素内
+            if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 && canvasPosition is { X: > -5, Y: > -5 })
             {
-                Fill = Brushes.Red,
-                Points = new PointCollection()
-            };
+                // 如果超出5个像素内，调整点击位置到Image边界
+                imagePosition.X = Math.Max(0, Math.Min(imagePosition.X, image.ActualWidth));
+                imagePosition.Y = Math.Max(0, Math.Min(imagePosition.Y, image.ActualHeight));
 
-            SelectionCanvas.Children.Add(_arrowLine);
-            SelectionCanvas.Children.Add(_arrowHead);
+                _startPoint = new Point(imagePosition.X + image.Margin.Left, imagePosition.Y + image.Margin.Top);
 
-            // 捕获鼠标事件
-            Mouse.Capture(SelectionCanvas);
+                _arrowLine = new Line
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 2
+                };
+
+                _arrowHead = new Polygon
+                {
+                    Fill = Brushes.Red,
+                    Points = new PointCollection()
+                };
+
+                SelectionCanvas.Children.Add(_arrowLine);
+                SelectionCanvas.Children.Add(_arrowHead);
+
+                // 捕获鼠标事件
+                Mouse.Capture(SelectionCanvas);
+            }
         }
     }
 
@@ -123,30 +199,60 @@ public partial class SwipeDialog
         position.Y = Math.Max(0, Math.Min(position.Y, image.ActualHeight));
         MousePositionText.Text = $"[ {(int)(position.X / _scaleRatio)}, {(int)(position.Y / _scaleRatio)} ]";
 
-        if (_arrowLine == null || e.LeftButton != MouseButtonState.Pressed)
-            return;
+        var isCtrlKeyPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+        if (_isDragging && isCtrlKeyPressed && e.LeftButton == MouseButtonState.Pressed)
+        {
+            var Dposition = e.GetPosition(ImageArea);
+            Point previousPosition = _dragStartPoint;
+            if (previousPosition == new Point(0, 0))
+            {
+                previousPosition = Dposition;
+            }
 
-        _endPoint = e.GetPosition(SelectionCanvas);
+            double offsetX = Dposition.X - previousPosition.X;
+            double offsetY = Dposition.Y - previousPosition.Y;
 
-        // 确保箭头的终点在Image内部
-        _endPoint.X = Math.Max(0, Math.Min(_endPoint.X, image.ActualWidth));
-        _endPoint.Y = Math.Max(0, Math.Min(_endPoint.Y, image.ActualHeight));
+            // 使用 Transform 类实现拖动
+            var translateTransform = ttf;
+            translateTransform.X += offsetX;
+            translateTransform.Y += offsetY;
 
-        _arrowLine.X1 = _startPoint.X;
-        _arrowLine.Y1 = _startPoint.Y;
-        _arrowLine.X2 = _endPoint.X;
-        _arrowLine.Y2 = _endPoint.Y;
+            _dragStartPoint = Dposition;
+        }
+        else
+        {
+            if (e.LeftButton != MouseButtonState.Pressed)
+                return;
 
-        DrawArrowHead(_startPoint, _endPoint);
-        MousePositionText.Text =
-            $"[ {(int)(_startPoint.X / _scaleRatio)}, {(int)(_startPoint.Y / _scaleRatio)} ] -> [ {(int)(_endPoint.X / _scaleRatio)}, {(int)(_endPoint.Y / _scaleRatio)} ]";
+
+            if (_arrowLine == null || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            _endPoint = e.GetPosition(SelectionCanvas);
+
+            // 确保箭头的终点在Image内部
+            _endPoint.X = Math.Max(0, Math.Min(_endPoint.X, image.ActualWidth));
+            _endPoint.Y = Math.Max(0, Math.Min(_endPoint.Y, image.ActualHeight));
+
+            _arrowLine.X1 = _startPoint.X;
+            _arrowLine.Y1 = _startPoint.Y;
+            _arrowLine.X2 = _endPoint.X;
+            _arrowLine.Y2 = _endPoint.Y;
+
+            DrawArrowHead(_startPoint, _endPoint);
+            MousePositionText.Text =
+                $"[ {(int)(_startPoint.X / _scaleRatio)}, {(int)(_startPoint.Y / _scaleRatio)} ] -> [ {(int)(_endPoint.X / _scaleRatio)}, {(int)(_endPoint.Y / _scaleRatio)} ]";
+        }
     }
 
     private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
     {
         if (_arrowLine == null)
             return;
-
+        if (_isDragging)
+        {
+            _isDragging = false;
+        }
         StartPoint = _startPoint;
         EndPoint = _endPoint;
         Mouse.Capture(null);

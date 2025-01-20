@@ -432,7 +432,35 @@ public class MaaProcessor
 
         return CreateBitmapImage(imageData);
     }
+    public BitmapFrame? GetBitmapFrame()
+    {
+        using var buffer = GetImage(GetCurrentTasker()?.Controller);
+        if (buffer == null) return null;
 
+        var encodedDataHandle = buffer.GetEncodedData(out var size);
+        if (encodedDataHandle == IntPtr.Zero)
+        {
+            Growls.ErrorGlobal("Handle为空！");
+            return null;
+        }
+
+        var imageData = new byte[size];
+        Marshal.Copy(encodedDataHandle, imageData, 0, (int)size);
+
+        if (imageData.Length == 0)
+            return null;
+
+        return CreateBitmapFrame(imageData);
+    }
+    
+    private static BitmapFrame CreateBitmapFrame(byte[] byteArray)
+    {
+        using (MemoryStream stream = new MemoryStream(byteArray))
+        {
+            BitmapFrame result = BitmapFrame.Create(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            return result;
+        }
+    }
     private static BitmapImage CreateBitmapImage(byte[] imageData)
     {
         var bitmapImage = new BitmapImage();
