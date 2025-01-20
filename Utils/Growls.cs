@@ -6,14 +6,18 @@ namespace MFATools.Utils;
 
 public static class Growls
 {
-    public static void Warning(string message, string token = "")
+  public static void Warning(string message, string token = "")
     {
         Process(() =>
         {
             Growl.Warning(new GrowlInfo
             {
-                Message = message, WaitTime = 3,
-                Token = token
+                IsCustom = true,
+                Message = message,
+                WaitTime = 3,
+                Token = token,
+                IconKey = ResourceToken.WarningGeometry,
+                IconBrushKey = ResourceToken.WarningBrush,
             });
         });
     }
@@ -22,9 +26,13 @@ public static class Growls
     {
         Process(() =>
         {
-            Growl.WarningGlobal(new GrowlInfo
+            Growl.InfoGlobal(new GrowlInfo
             {
-                Message = message, WaitTime = 3,
+                IsCustom = true,
+                Message = message,
+                WaitTime = 3,
+                IconKey = ResourceToken.WarningGeometry,
+                IconBrushKey = ResourceToken.WarningBrush,
                 Token = token
             });
         });
@@ -34,12 +42,17 @@ public static class Growls
     {
         Process(() =>
         {
-            Growl.Warning(new GrowlInfo
+            Growl.Info(new GrowlInfo
             {
-                Message = message, WaitTime = 6, IconKey = ResourceToken.ErrorGeometry,
-                IconBrushKey = ResourceToken.DangerBrush, Icon = null,
+                IsCustom = true,
+                Message = message,
+                WaitTime = 6,
+                IconKey = ResourceToken.ErrorGeometry,
+                IconBrushKey = ResourceToken.DangerBrush,
+                Icon = null,
                 Token = token
             });
+
         });
     }
 
@@ -47,12 +60,31 @@ public static class Growls
     {
         Process(() =>
         {
-            Growl.WarningGlobal(new GrowlInfo
+            Growl.InfoGlobal(new GrowlInfo
             {
-                Message = message, WaitTime = 6, IconKey = ResourceToken.ErrorGeometry,
-                IconBrushKey = ResourceToken.DangerBrush, Icon = null,
+                IsCustom = true,
+                Message = message,
+                WaitTime = 6,
+                IconKey = ResourceToken.ErrorGeometry,
+                IconBrushKey = ResourceToken.DangerBrush,
+                Icon = null,
                 Token = token
             });
+        });
+    }
+    public static void InfoGlobal(string message, string token = "")
+    {
+        Process(() =>
+        {
+            Growl.InfoGlobal(message);
+        });
+    }
+
+    public static void Info(string message, string token = "")
+    {
+        Process(() =>
+        {
+            Growl.Info(message);
         });
     }
 

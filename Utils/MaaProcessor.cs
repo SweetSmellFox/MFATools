@@ -12,7 +12,6 @@ using HandyControl.Controls;
 using HandyControl.Tools.Extension;
 using MaaFramework.Binding;
 using MaaFramework.Binding.Buffers;
-using MaaFramework.Binding.Messages;
 using MFATools.Data;
 using MFATools.ViewModels;
 using MFATools.Views;
@@ -112,7 +111,7 @@ public class MaaProcessor
             TaskManager.RunTaskAsync(() =>
             {
                 MainWindow.Data?.AddLogByKey("Stopping");
-                if (_currentTasker == null || (_currentTasker?.Abort()).IsTrue())
+                if (_currentTasker == null || _currentTasker?.Abort().Wait() == MaaJobStatus.Succeeded)
                 {
                     DisplayTaskCompletionMessage();
                     if (MainWindow.Data != null)
