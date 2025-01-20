@@ -49,6 +49,7 @@
   
     <!-- Build and Publish -->
     <PropertyGroup>
+	    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 	    <OutputPath>..\bin\$(Platform)\$(Configuration)\</OutputPath>
         <PublishReadyToRun>false</PublishReadyToRun>
         <PublishSingleFile>true</PublishSingleFile>
