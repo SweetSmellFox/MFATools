@@ -69,7 +69,7 @@ public class MainViewModel : ObservableObject
 
     private Brush _windowTopMostButtonForeground =
         (Brush)Application.Current.FindResource("MainBackgroundBrush");
-
+    
     public Brush WindowTopMostButtonForeground
     {
         get => _windowTopMostButtonForeground;

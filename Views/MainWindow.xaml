@@ -78,6 +78,7 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <hc:SimpleStackPanel Orientation="Horizontal" Margin="15,2,10,0" Height="30">
+                    
                     <TabControl TabStripPlacement="Top" Background="Transparent"
                                 SelectionChanged="TabControl_OnSelectionChanged" IsEnabled="{Binding Idle}"
                                 BorderThickness="0" x:Name="TabControl"
@@ -85,10 +86,12 @@
                         <TabItem Header="{lex:Loc TabADB}" x:Name="adbTab"></TabItem>
                         <TabItem Header="{lex:Loc TabWin32}" x:Name="win32Tab"></TabItem>
                     </TabControl>
+                    
                     <ComboBox Width="250" x:Name="deviceComboBox" Margin="4 0 0 0"
                               IsEnabled="{Binding Idle}"
                               ItemTemplateSelector="{StaticResource DeviceWindowTemplateSelector}"
                               SelectionChanged="DeviceComboBox_OnSelectionChanged" />
+                    
                     <Button ToolTip="{lex:Loc TooltipRefresh}" Width="20" Height="20" Margin="6 0 2 0"
                             Style="{StaticResource textBoxButton}"
                             Foreground="{DynamicResource GrayColor4}"
@@ -102,12 +105,14 @@
                             Click="CustomAdb" IsEnabled="{Binding Idle}"
                             Padding="0" hc:IconElement.Width="14"
                             hc:IconElement.Geometry="{StaticResource CustomGeometry}" />
+                    
                     <Button ToolTip="{lex:Loc TooltipRefresh}" Width="20" Height="20" Margin="6 0 2 0"
                             Style="{StaticResource textBoxButton}"
                             Foreground="{DynamicResource GrayColor4}"
                             Click="EditSetting" IsEnabled="{Binding Idle}"
                             Padding="0" hc:IconElement.Width="18"
                             hc:IconElement.Geometry="{StaticResource SettingsRegular}" />
+                    
                 </hc:SimpleStackPanel>
                 <Grid Grid.Row="1" ClipToBounds="False" Margin="15 0 15 0">
                     <Grid.RowDefinitions>
@@ -136,8 +141,8 @@
                                     Style="{StaticResource textBoxButton}"
                                     Foreground="{DynamicResource GrayColor4}"
                                     Click="RecognitionText"
-                                    Padding="0" hc:IconElement.Width="12" Margin="2 0 2 0"
-                                    hc:IconElement.Height="12"
+                                    Padding="0"  Margin="2 0 2 0"
+                                    hc:IconElement.Height="12" hc:IconElement.Width="12"
                                     hc:IconElement.Geometry="{StaticResource RecognitionTextGeometry}" />
                             <Button ToolTip="{lex:Loc EditTaskDialog_ColorExtraction_Tooltip}" Width="15"
                                     Height="15"

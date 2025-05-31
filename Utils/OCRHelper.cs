@@ -40,21 +40,25 @@ public class OCRHelper
         {
             Task = new TaskModel
             {
-                Recognition = "OCR", Roi = new List<int>
+                Recognition = "OCR",
+                Roi = new List<int>
                 {
-                    x, y,
-                    width, height
+                    x,
+                    y,
+                    width,
+                    height
                 }
             },
             Name = "AppendOCR",
         };
         var job = MaaProcessor.Instance.GetCurrentTasker()?
-            .AppendPipeline(taskItemViewModel.Name, taskItemViewModel.ToString());
+            .AppendTask(taskItemViewModel.Name, taskItemViewModel.ToString());
         if (job?.Wait() == MaaJobStatus.Succeeded)
         {
             var query =
                 JsonConvert.DeserializeObject<RecognitionQuery>(job.QueryRecognitionDetail()?
-                    .Detail ?? string.Empty);
+                        .Detail
+                    ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(query?.Best?.Text))
                 result = query.Best.Text;
         }
@@ -67,24 +71,31 @@ public class OCRHelper
         return result;
     }
 
-    public static string ReadTextFromMAAContext(in IMaaContext context, IMaaImageBuffer image, int x, int y,
-        int width, int height)
+    public static string ReadTextFromMAAContext(in IMaaContext context,
+        IMaaImageBuffer image,
+        int x,
+        int y,
+        int width,
+        int height)
     {
         var result = string.Empty;
         var taskItemViewModel = new TaskItemViewModel
         {
             Task = new TaskModel
             {
-                Recognition = "OCR", Roi = new List<int>
+                Recognition = "OCR",
+                Roi = new List<int>
                 {
-                    x, y,
-                    width, height
+                    x,
+                    y,
+                    width,
+                    height
                 }
             },
             Name = "AppendOCR",
         };
         var detail =
-            context.RunRecognition(taskItemViewModel.Name, taskItemViewModel.ToString(), image);
+            context.RunRecognition(taskItemViewModel.Name, image, taskItemViewModel.ToString());
 
         if (detail != null)
         {

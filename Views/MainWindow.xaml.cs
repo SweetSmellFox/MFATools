@@ -466,7 +466,7 @@ public partial class MainWindow
         if (colorExtractionDialog.ShowDialog() == true)
         {
             AppendLog(new Attribute("upper", colorExtractionDialog.OutputUpper));
-            AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
+                AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
             AppendLog(new Attribute("recommended roi", colorExtractionDialog.OutputRoi));
             switch (colorExtractionDialog.SelectType.SelectedIndex)
             {

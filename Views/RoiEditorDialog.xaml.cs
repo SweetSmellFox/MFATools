@@ -43,7 +43,22 @@ public partial class RoiEditorDialog
     {
         Close();
     }
-
+    private void Paste(object sender, RoutedEventArgs e)
+    {
+        if (Clipboard.ContainsText())
+        {
+            var clipboardText = Clipboard.GetText();
+            var lx = ExtractNumbers(clipboardText);
+            xText.Text = lx[0].ToString();
+            yText.Text = lx[1].ToString();
+            wText.Text = lx[2].ToString();
+            hText.Text = lx[3].ToString();
+            X = lx[0].ToString();
+            Y = lx[1].ToString();
+            W = lx[2].ToString();
+            H = lx[3].ToString();
+        }
+    }
     public static readonly DependencyProperty XProperty =
         DependencyProperty.Register(
             nameof(X),
@@ -100,20 +115,5 @@ public partial class RoiEditorDialog
         set => SetValue(HProperty, value);
     }
 
-    private void Paste(object sender, RoutedEventArgs e)
-    {
-        if (Clipboard.ContainsText())
-        {
-            var clipboardText = Clipboard.GetText();
-            var lx = ExtractNumbers(clipboardText);
-            xText.Text = lx[0].ToString();
-            yText.Text = lx[1].ToString();
-            wText.Text = lx[2].ToString();
-            hText.Text = lx[3].ToString();
-            X = lx[0].ToString();
-            Y = lx[1].ToString();
-            W = lx[2].ToString();
-            H = lx[3].ToString();
-        }
-    }
+
 }

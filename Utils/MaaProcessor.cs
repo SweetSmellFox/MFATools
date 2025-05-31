@@ -87,7 +87,7 @@ public class MaaProcessor
                 : "Window");
             var instance = await Task.Run(GetCurrentTasker, token);
 
-            if (instance == null || !instance.Initialized)
+            if (instance == null || !instance.IsInitialized)
             {
                 Growls.ErrorGlobal("InitInstanceFailed".GetLocalizationString());
                 LoggerService.LogWarning("InitControllerFailed".GetLocalizationString());
@@ -165,12 +165,12 @@ public class MaaProcessor
         foreach (var selectOption in options)
         {
             if (MaaInterface.Instance?.Option?.TryGetValue(selectOption.Name ?? string.Empty,
-                    out var interfaceOption) ==
-                true &&
-                MainWindow.Instance != null &&
-                selectOption.Index is int index &&
-                interfaceOption.Cases is { } cases &&
-                cases[index]?.PipelineOverride != null)
+                    out var interfaceOption)
+                == true
+                && MainWindow.Instance != null
+                && selectOption.Index is int index
+                && interfaceOption.Cases is { } cases
+                && cases[index]?.PipelineOverride != null)
             {
                 var param = interfaceOption.Cases[selectOption.Index.Value].PipelineOverride;
                 MainWindow.Instance.TaskDictionary = MainWindow.Instance.TaskDictionary.MergeTaskModels(param);
@@ -198,8 +198,8 @@ public class MaaProcessor
             return "{}";
         }
     }
-    
-    
+
+
     private async Task<bool> ExecuteTasks(CancellationToken token)
     {
         while (TaskQueue.Count > 0)
@@ -394,10 +394,12 @@ public class MaaProcessor
 
     private void RegisterCustomRecognitionsAndActions(MaaTasker _)
     {
-        
+
     }
-    
-    private void HandleInitializationError(Exception e, string message, bool hasWarning = false,
+
+    private void HandleInitializationError(Exception e,
+        string message,
+        bool hasWarning = false,
         string waringMessage = "")
     {
         Console.WriteLine(e);
@@ -414,44 +416,32 @@ public class MaaProcessor
     public BitmapImage? GetBitmapImage()
     {
         using var buffer = GetImage(GetCurrentTasker()?.Controller);
-        if (buffer == null) return null;
 
-        var encodedDataHandle = buffer.GetEncodedData(out var size);
-        if (encodedDataHandle == IntPtr.Zero)
+        if (!buffer.TryGetEncodedData(out Stream? stream))
         {
             Growls.ErrorGlobal("Handle为空！");
             return null;
         }
 
-        var imageData = new byte[size];
-        Marshal.Copy(encodedDataHandle, imageData, 0, (int)size);
-
-        if (imageData.Length == 0)
-            return null;
-
-        return CreateBitmapImage(imageData);
+        return CreateBitmapImage(stream);
     }
+
     public BitmapFrame? GetBitmapFrame()
     {
         using var buffer = GetImage(GetCurrentTasker()?.Controller);
-        if (buffer == null) return null;
-
-        var encodedDataHandle = buffer.GetEncodedData(out var size);
-        if (encodedDataHandle == IntPtr.Zero)
+        if (buffer.TryGetEncodedData(out byte[]? imageData))
         {
             Growls.ErrorGlobal("Handle为空！");
             return null;
         }
 
-        var imageData = new byte[size];
-        Marshal.Copy(encodedDataHandle, imageData, 0, (int)size);
 
-        if (imageData.Length == 0)
+        if (imageData == null)
             return null;
 
         return CreateBitmapFrame(imageData);
     }
-    
+
     private static BitmapFrame CreateBitmapFrame(byte[] byteArray)
     {
         using (MemoryStream stream = new MemoryStream(byteArray))
@@ -460,6 +450,21 @@ public class MaaProcessor
             return result;
         }
     }
+    
+    private static BitmapImage CreateBitmapImage(Stream stream)
+    {
+        var bitmapImage = new BitmapImage();
+
+        bitmapImage.BeginInit();
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.StreamSource = stream;
+        bitmapImage.EndInit();
+
+
+        bitmapImage.Freeze();
+        return bitmapImage;
+    }
+
     private static BitmapImage CreateBitmapImage(byte[] imageData)
     {
         var bitmapImage = new BitmapImage();
@@ -479,7 +484,7 @@ public class MaaProcessor
     {
         if (maa == null || task == null) return false;
         if (string.IsNullOrWhiteSpace(taskParams)) taskParams = "{}";
-        return maa.AppendPipeline(task, taskParams).Wait() == MaaJobStatus.Succeeded;
+        return maa.AppendTask(task, taskParams).Wait() == MaaJobStatus.Succeeded;
     }
 
     private static MaaImageBuffer GetImage(IMaaController? maaController)
@@ -495,4 +500,3 @@ public class MaaProcessor
         return buffer;
     }
 }
-

@@ -101,8 +101,9 @@ public class VersionChecker
 
     private string ExtractVersionNumber(string versionString)
     {
+        if (versionString.StartsWith("v"))
+            versionString = versionString.Remove(0, 1);
         string[] parts = versionString.Replace(" v", " ").Split(' ');
-
         foreach (var part in parts)
         {
             if (Version.TryParse(part, out _))
