@@ -29,9 +29,8 @@ public partial class ColorExtractionDialog
         InitializeComponent();
         Task.Run(() =>
         {
-            var image = MaaProcessor.Instance.GetBitmapImage();
-            Growls.Process(() => { UpdateImage(image); });
-
+            var ima = MaaProcessor.Instance.GetBitmapImage();
+            Growls.Process(() => { UpdateImage(ima); });
         });
     }
 
@@ -62,6 +61,7 @@ public partial class ColorExtractionDialog
         RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
         CenterWindow();
     }
+
     private Point _dragStartPoint;
     private bool _isDragging;
     private double _scaleRatio;
@@ -270,21 +270,21 @@ public partial class ColorExtractionDialog
             return;
         }
 
-        var x = Canvas.GetLeft(_selectionRectangle);
-        var y = Canvas.GetTop(_selectionRectangle);
-        var w = _selectionRectangle.Width;
-        var h = _selectionRectangle.Height;
+        var x = (int)(Canvas.GetLeft(_selectionRectangle) / _scaleRatio);
+        var y = (int)(Canvas.GetTop(_selectionRectangle) / _scaleRatio);
+        var w = (int)(_selectionRectangle.Width / _scaleRatio);
+        var h = (int)(_selectionRectangle.Height / _scaleRatio);
 
         switch (SelectType.SelectedIndex)
         {
             case 0:
-                GetColorRange(Math.Round(x), Math.Round(y), Math.Round(w), Math.Round(h));
+                GetColorRange(x, y, w, h);
                 break;
             case 1:
-                GetColorRangeHSV(Math.Round(x), Math.Round(y), Math.Round(w), Math.Round(h));
+                GetColorRangeHSV(x, y, w, h);
                 break;
             case 2:
-                GetColorRangeGray(Math.Round(x), Math.Round(y), Math.Round(w), Math.Round(h));
+                GetColorRangeGray(x, y, w, h);
                 break;
         }
         DialogResult = true;
@@ -306,45 +306,52 @@ public partial class ColorExtractionDialog
             var writeableBitmap = new WriteableBitmap(bitmapFrame);
 
             OutputRoi = [(int)roiX, (int)roiY, (int)roiW, (int)roiH];
-
-            var croppedBitmap =
-                new CroppedBitmap(writeableBitmap, new Int32Rect((int)x, (int)y, (int)width, (int)height));
-
-            var pixels = new byte[(int)width * (int)height * 4];
-            croppedBitmap.CopyPixels(pixels, (int)width * 4, 0);
-
-            int minR = 255, minG = 255, minB = 255;
-            int maxR = 0, maxG = 0, maxB = 0;
-
-            for (int i = 0; i < pixels.Length; i += 4)
+            Console.WriteLine($"image: {bitmapFrame.PixelWidth}, {bitmapFrame.PixelHeight},ROI: {(int)x}, {(int)y}, {(int)width}, {(int)height}");
+            try
             {
-                int r = pixels[i + 2];
-                int g = pixels[i + 1];
-                int b = pixels[i];
+                var croppedBitmap =
+                    new CroppedBitmap(writeableBitmap, new Int32Rect((int)x, (int)y, (int)width, (int)height));
 
-                if (r < minR) minR = r;
-                if (g < minG) minG = g;
-                if (b < minB) minB = b;
+                var pixels = new byte[(int)width * (int)height * 4];
+                croppedBitmap.CopyPixels(pixels, (int)width * 4, 0);
 
-                if (r > maxR) maxR = r;
-                if (g > maxG) maxG = g;
-                if (b > maxB) maxB = b;
+                int minR = 255, minG = 255, minB = 255;
+                int maxR = 0, maxG = 0, maxB = 0;
+
+                for (int i = 0; i < pixels.Length; i += 4)
+                {
+                    int r = pixels[i + 2];
+                    int g = pixels[i + 1];
+                    int b = pixels[i];
+
+                    if (r < minR) minR = r;
+                    if (g < minG) minG = g;
+                    if (b < minB) minB = b;
+
+                    if (r > maxR) maxR = r;
+                    if (g > maxG) maxG = g;
+                    if (b > maxB) maxB = b;
+                }
+
+                var lower = new List<int>
+                {
+                    minR,
+                    minG,
+                    minB
+                };
+                var upper = new List<int>
+                {
+                    maxR,
+                    maxG,
+                    maxB
+                };
+                OutputUpper = upper;
+                OutputLower = lower;
             }
-
-            var lower = new List<int>
+            catch (Exception e)
             {
-                minR,
-                minG,
-                minB
-            };
-            var upper = new List<int>
-            {
-                maxR,
-                maxG,
-                maxB
-            };
-            OutputUpper = upper;
-            OutputLower = lower;
+                Console.WriteLine(e);
+            }
             // 输出颜色上下限值
         }
     }
@@ -513,6 +520,7 @@ public partial class ColorExtractionDialog
             {
                 var bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
                 UpdateImage(bitmapImage);
+                _selectionRectangle = null;
             }
             catch (Exception ex)
             {
