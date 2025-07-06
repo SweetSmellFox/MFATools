@@ -171,8 +171,8 @@ public partial class CropImageDialog
 
                 _selectionRectangle = new Rectangle
                 {
-                    Stroke = Brushes.LightGreen,
-                    StrokeThickness = 1,
+                    Stroke = SettingDialog.DefaultLineColor,
+                    StrokeThickness = SettingDialog.DefaultLineThickness,
                     StrokeDashArray =
                     {
                         2
@@ -419,8 +419,8 @@ public partial class CropImageDialog
 
         _selectionRectangle = new Rectangle
         {
-            Stroke = Brushes.LightGreen,
-            StrokeThickness = 1,
+            Stroke = SettingDialog.DefaultLineColor,
+            StrokeThickness = SettingDialog.DefaultLineThickness,
             StrokeDashArray =
             {
                 2

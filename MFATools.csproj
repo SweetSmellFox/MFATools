@@ -19,11 +19,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="HandyControls" Version="3.6.0" />
+    <PackageReference Include="HandyControls.Lang.zh-CN" Version="3.6.0" />
     <PackageReference Include="Maa.AgentBinary" Version="1.1.0" />
     <PackageReference Include="Maa.Framework.Binding.Native" Version="4.2.0" />
     <PackageReference Include="Maa.Framework.Native" Version="4.2.0" />
-    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="4.2.3" />
-    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="4.2.3" />
+    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="4.3.2" />
+    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="4.3.2" />
   </ItemGroup>
     <!-- Info -->
     <PropertyGroup>

@@ -452,4 +452,10 @@
     <data name="ReadFromClipboard" xml:space="preserve">
         <value>Read from Clipboard</value>
     </data>
+    <data name="LineThickness" xml:space="preserve">
+        <value>Line Thickness</value>
+    </data>
+    <data name="LineColor" xml:space="preserve">
+        <value>Line Color</value>
+    </data>
 </root>

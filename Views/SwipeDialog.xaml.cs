@@ -173,13 +173,13 @@ public partial class SwipeDialog
 
                 _arrowLine = new Line
                 {
-                    Stroke = Brushes.Red,
-                    StrokeThickness = 2
+                    Stroke = SettingDialog.DefaultLineColor,
+                    StrokeThickness = SettingDialog.DefaultLineThickness,
                 };
 
                 _arrowHead = new Polygon
                 {
-                    Fill = Brushes.Red,
+                    Fill = SettingDialog.DefaultLineColor,
                     Points = new PointCollection()
                 };
 

@@ -104,7 +104,9 @@ public partial class MainWindow
             Data.IsAdb = adbTab.IsSelected;
             btnCustom.Visibility = adbTab.IsSelected ? Visibility.Visible : Visibility.Collapsed;
         }
-
+        
+        MaaProcessor.Instance.SetCurrentTasker();
+        
         if ("adb".Equals(MaaProcessor.Config.AdbDevice.AdbPath) &&
             DataSet.TryGetData<JObject>("AdbDevice", out var jObject))
         {
@@ -121,8 +123,6 @@ public partial class MainWindow
             }
         }
         else AutoDetectDevice();
-
-        MaaProcessor.Instance.SetCurrentTasker();
     }
 
     public void AddSettingOption(Panel? panel, string titleKey, IEnumerable<string> options, string datatype,
@@ -228,7 +228,7 @@ public partial class MainWindow
             Growl.Info(string.Format(LocExtension.GetLocalizedValue<string>("WindowSelectionMessage"),
                 window.Name));
             MaaProcessor.Config.DesktopWindow.HWnd = window.Handle;
-            MaaProcessor.Instance.SetCurrentTasker();
+            
         }
         else if (deviceComboBox.SelectedItem is AdbDeviceInfo device)
         {
@@ -237,9 +237,9 @@ public partial class MainWindow
             MaaProcessor.Config.AdbDevice.AdbPath = device.AdbPath;
             MaaProcessor.Config.AdbDevice.AdbSerial = device.AdbSerial;
             MaaProcessor.Config.AdbDevice.Config = device.Config;
-            MaaProcessor.Instance.SetCurrentTasker();
             DataSet.SetData("AdbDevice", device);
         }
+        MaaProcessor.Instance.SetCurrentTasker();
     }
 
     private void Refresh(object sender, RoutedEventArgs e)

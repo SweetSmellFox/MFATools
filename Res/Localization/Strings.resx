@@ -480,4 +480,10 @@
     <data name="ReadFromClipboard" xml:space="preserve">
         <value>从剪贴板读取</value>
     </data>
+    <data name="LineThickness" xml:space="preserve">
+        <value>线条粗细</value>
+    </data>
+    <data name="LineColor" xml:space="preserve">
+        <value>线条颜色</value>
+    </data>
 </root>

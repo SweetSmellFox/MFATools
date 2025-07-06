@@ -168,8 +168,8 @@ public partial class RecognitionTextDialog
 
                 _selectionRectangle = new Rectangle
                 {
-                    Stroke = Brushes.LightGreen,
-                    StrokeThickness = 1,
+                    Stroke = SettingDialog.DefaultLineColor,
+                    StrokeThickness = SettingDialog.DefaultLineThickness,
                     StrokeDashArray =
                     {
                         2
@@ -342,8 +342,8 @@ public partial class RecognitionTextDialog
 
         _selectionRectangle = new Rectangle
         {
-            Stroke = Brushes.LightGreen,
-            StrokeThickness = 1,
+            Stroke = SettingDialog.DefaultLineColor,
+            StrokeThickness = SettingDialog.DefaultLineThickness,
             StrokeDashArray =
             {
                 2
