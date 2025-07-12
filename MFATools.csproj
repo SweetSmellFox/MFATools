@@ -21,10 +21,10 @@
     <PackageReference Include="HandyControls" Version="3.6.0" />
     <PackageReference Include="HandyControls.Lang.zh-CN" Version="3.6.0" />
     <PackageReference Include="Maa.AgentBinary" Version="1.1.0" />
-    <PackageReference Include="Maa.Framework.Binding.Native" Version="4.2.0" />
-    <PackageReference Include="Maa.Framework.Native" Version="4.2.0" />
-    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="4.3.2" />
-    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="4.3.2" />
+    <PackageReference Include="Maa.Framework.Binding.Native" Version="4.4.0-preview.1" />
+    <PackageReference Include="Maa.Framework.Native" Version="4.4.0-preview.1" />
+    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="4.4.0" />
+    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="4.4.0" />
   </ItemGroup>
     <!-- Info -->
     <PropertyGroup>
@@ -47,7 +47,7 @@
         <ApplicationVersion>1.1.0</ApplicationVersion>
         <Version>1.1</Version>
         <FileVersion>0.0.1</FileVersion>
-        <AssemblyVersion>1.2.5.6</AssemblyVersion>
+        <AssemblyVersion>1.2.5.7</AssemblyVersion>
         <InformationalVersion>0.0.1</InformationalVersion>
     </PropertyGroup>
   

@@ -446,6 +446,7 @@ public partial class MainWindow
         if (cropImageDialog.ShowDialog() == true)
         {
             AppendLog(new Attribute("template", cropImageDialog.Output));
+            AppendLog(new Attribute("origin roi", cropImageDialog.OutputOriginRoi));
             AppendLog(new Attribute("recommended roi", cropImageDialog.OutputRoi));
         }
     }

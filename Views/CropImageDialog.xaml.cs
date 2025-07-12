@@ -26,7 +26,13 @@ public partial class CropImageDialog
         get => _outputRoi;
         set => _outputRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
+    private List<int>? _outputOriginRoi { get; set; }
 
+    public List<int>? OutputOriginRoi
+    {
+        get => _outputOriginRoi;
+        set => _outputOriginRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
+    }
     public CropImageDialog()
     {
         InitializeComponent();
@@ -296,6 +302,12 @@ public partial class CropImageDialog
         // 创建BitmapImage对象
         if (image.Source is BitmapImage bitmapImage)
         {
+            OutputOriginRoi = [
+                (int)x,
+                (int)y,
+                (int)width,
+                (int)height
+            ];
             var roiX = Math.Max(x - 5, 0);
             var roiY = Math.Max(y - 5, 0);
             var roiW = Math.Min(width + 10, bitmapImage.PixelWidth - roiX);
