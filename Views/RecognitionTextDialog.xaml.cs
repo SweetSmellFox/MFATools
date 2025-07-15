@@ -286,17 +286,16 @@ public partial class RecognitionTextDialog
         Output = [x, y, w, h];
         if (image.Source is BitmapImage bitmapImage)
         {
-            var roiX = Math.Max(x - 5, 0);
-            var roiY = Math.Max(y - 5, 0);
-            var roiW = Math.Min(w + 10, bitmapImage.PixelWidth - roiX);
-            var roiH = Math.Min(h + 10, bitmapImage.PixelHeight - roiY);
-            OutputRoi = new List<int>
-            {
+            var roiX = Math.Max(x - (int)(MFAExtensions.HorizontalExpansion / 2), 0);
+            var roiY = Math.Max(y - (int)(MFAExtensions.VerticalExpansion / 2), 0);
+            var roiW = Math.Min(w + (int)(MFAExtensions.HorizontalExpansion / 2), bitmapImage.PixelWidth - roiX);
+            var roiH = Math.Min(h + (int)(MFAExtensions.VerticalExpansion / 2), bitmapImage.PixelHeight - roiY);
+            OutputRoi = [
                 roiX,
                 roiY,
                 roiW,
                 roiH
-            };
+            ];
         }
 
         DialogResult = true;

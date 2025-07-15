@@ -26,6 +26,7 @@ public partial class CropImageDialog
         get => _outputRoi;
         set => _outputRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
+
     private List<int>? _outputOriginRoi { get; set; }
 
     public List<int>? OutputOriginRoi
@@ -33,6 +34,7 @@ public partial class CropImageDialog
         get => _outputOriginRoi;
         set => _outputOriginRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
+
     public CropImageDialog()
     {
         InitializeComponent();
@@ -73,7 +75,8 @@ public partial class CropImageDialog
         SelectionCanvas.Width = image.Width;
         SelectionCanvas.Height = image.Height;
         Width = image.Width + 20;
-        Height = image.Height + 100;    RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
+        Height = image.Height + 100;
+        RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
         CenterWindow();
     }
 
@@ -302,16 +305,17 @@ public partial class CropImageDialog
         // 创建BitmapImage对象
         if (image.Source is BitmapImage bitmapImage)
         {
-            OutputOriginRoi = [
+            OutputOriginRoi =
+            [
                 (int)x,
                 (int)y,
                 (int)width,
                 (int)height
             ];
-            var roiX = Math.Max(x - 5, 0);
-            var roiY = Math.Max(y - 5, 0);
-            var roiW = Math.Min(width + 10, bitmapImage.PixelWidth - roiX);
-            var roiH = Math.Min(height + 10, bitmapImage.PixelHeight - roiY);
+            var roiX = Math.Max(x - MFAExtensions.HorizontalExpansion / 2, 0);
+            var roiY = Math.Max(y - MFAExtensions.VerticalExpansion / 2, 0);
+            var roiW = Math.Min(width + MFAExtensions.HorizontalExpansion / 2, bitmapImage.PixelWidth - roiX);
+            var roiH = Math.Min(height + MFAExtensions.VerticalExpansion / 2, bitmapImage.PixelHeight - roiY);
             OutputRoi = new List<int>
             {
                 (int)roiX,
@@ -414,7 +418,8 @@ public partial class CropImageDialog
                 errorView.Show();
             }
         }
-    } public void DrawRectangle(int x, int y, int width, int height)
+    }
+    public void DrawRectangle(int x, int y, int width, int height)
     {
         if (x < 1 || !double.IsNormal(x)) x = 1;
         if (y < 1 || !double.IsNormal(y)) y = 1;

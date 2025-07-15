@@ -8,6 +8,9 @@ namespace MFATools.Utils;
 
 public static class MFAExtensions
 {
+    public const double HorizontalExpansion = 100;
+    public const double VerticalExpansion = 100;
+    
     public static Dictionary<TKey, TaskModel> MergeTaskModels<TKey>(
         this IEnumerable<KeyValuePair<TKey, TaskModel>>? taskModels,
         IEnumerable<KeyValuePair<TKey, TaskModel>>? additionalModels) where TKey : notnull
