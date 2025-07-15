@@ -314,8 +314,8 @@ public partial class CropImageDialog
             ];
             var roiX = Math.Max(x - MFAExtensions.HorizontalExpansion / 2, 0);
             var roiY = Math.Max(y - MFAExtensions.VerticalExpansion / 2, 0);
-            var roiW = Math.Min(width + MFAExtensions.HorizontalExpansion / 2, bitmapImage.PixelWidth - roiX);
-            var roiH = Math.Min(height + MFAExtensions.VerticalExpansion / 2, bitmapImage.PixelHeight - roiY);
+            var roiW = Math.Min(width + MFAExtensions.HorizontalExpansion, bitmapImage.PixelWidth - roiX);
+            var roiH = Math.Min(height + MFAExtensions.VerticalExpansion, bitmapImage.PixelHeight - roiY);
             OutputRoi = new List<int>
             {
                 (int)roiX,

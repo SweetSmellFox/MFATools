@@ -288,8 +288,8 @@ public partial class RecognitionTextDialog
         {
             var roiX = Math.Max(x - (int)(MFAExtensions.HorizontalExpansion / 2), 0);
             var roiY = Math.Max(y - (int)(MFAExtensions.VerticalExpansion / 2), 0);
-            var roiW = Math.Min(w + (int)(MFAExtensions.HorizontalExpansion / 2), bitmapImage.PixelWidth - roiX);
-            var roiH = Math.Min(h + (int)(MFAExtensions.VerticalExpansion / 2), bitmapImage.PixelHeight - roiY);
+            var roiW = Math.Min(w + (int)(MFAExtensions.HorizontalExpansion), bitmapImage.PixelWidth - roiX);
+            var roiH = Math.Min(h + (int)(MFAExtensions.VerticalExpansion), bitmapImage.PixelHeight - roiY);
             OutputRoi = [
                 roiX,
                 roiY,
