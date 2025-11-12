@@ -464,4 +464,10 @@
     <data name="ScreenshotFailed" xml:space="preserve">
         <value>Screenshot Failed</value>
     </data>
+    <data name="Preview" xml:space="preserve">
+        <value>Preview</value>
+    </data>
+    <data name="Restore" xml:space="preserve">
+        <value>Restore</value>
+    </data>
 </root>

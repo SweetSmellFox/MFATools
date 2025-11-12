@@ -44,7 +44,7 @@
                 </Grid>
             </Viewbox>
             <StackPanel Grid.Row="1" HorizontalAlignment="Center" Orientation="Horizontal" Margin=" 0 10 0 0">
-                <hc:ComboBox x:Name="SelectType" SelectedIndex="0" Margin="10 0 70 10" Width="100">
+                <hc:ComboBox x:Name="SelectType" SelectedIndex="0" Margin="10 0 70 10" Width="100" SelectionChanged="SelectType_OnSelectionChanged">
                     <ComboBoxItem>RGB</ComboBoxItem>
                     <ComboBoxItem>HSV</ComboBoxItem>
                     <ComboBoxItem>GRAY</ComboBoxItem>
@@ -131,6 +131,15 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                <ToggleButton  x:Name="SwitchButton"
+                               Click="SwitchButton_OnClick"
+                               Content="{lex:Loc Preview}"
+                               Foreground="{DynamicResource BlackColor}"
+                               FontSize="11"
+                               VerticalContentAlignment="Center"
+                               Width="90"
+                               Margin="20,0,200,10">
+                </ToggleButton>
             </StackPanel>
         </Grid>
     </Border>

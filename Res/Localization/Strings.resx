@@ -492,4 +492,10 @@
     <data name="ScreenshotFailed" xml:space="preserve">
         <value>截图失败</value>
     </data>
+    <data name="Preview" xml:space="preserve">
+        <value>预览</value>
+    </data>
+    <data name="Restore" xml:space="preserve">
+        <value>还原</value>
+    </data>
 </root>
