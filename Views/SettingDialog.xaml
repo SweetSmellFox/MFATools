@@ -34,10 +34,10 @@
                             <TextBlock Margin="0 0 0 2" Text="{lex:Loc LineThickness}" HorizontalAlignment="Left" Width="100" VerticalAlignment="Center" />
                             <hc:NumericUpDown x:Name="LineThicknessNumeric" 
                                               Tag="LineThickness" HorizontalAlignment="Stretch"
-                                              Minimum="0.5"
+                                              Minimum="1"
                                               Maximum="10.0" 
-                                              Increment="0.5" 
-                                              Value="1.5" 
+                                              Increment="1" 
+                                              Value="1" 
                             />
                         </StackPanel>
                             

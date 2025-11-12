@@ -489,4 +489,7 @@
     <data name="AlignToPixels" xml:space="preserve">
         <value>是否对齐像素</value>
     </data>
+    <data name="ScreenshotFailed" xml:space="preserve">
+        <value>截图失败</value>
+    </data>
 </root>

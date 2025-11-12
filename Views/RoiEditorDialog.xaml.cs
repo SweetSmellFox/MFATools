@@ -18,7 +18,16 @@ public partial class RoiEditorDialog
             H = (rectangle.Height / d) >= 0 ? ((int)(rectangle.Height / d)).ToString() : "1";
         }
     }
+    public RoiEditorDialog((int x,int y,int w,int h) rectangle)
+    {
+        InitializeComponent();
 
+            X = rectangle.x.ToString();
+            Y = rectangle.y.ToString();
+            W = rectangle.w.ToString();
+            H = rectangle.h.ToString();
+        
+    }
     static int[] ExtractNumbers(string input)
     {
         var matches = Regex.Matches(input, @"\d+")

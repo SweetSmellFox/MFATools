@@ -1,6 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using HandyControl.Controls;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Windows.Media.Imaging;
 using WPFLocalizeExtension.Engine;
 using WPFLocalizeExtension.Extensions;
 
@@ -10,6 +14,30 @@ public static class MFAExtensions
 {
     public const double HorizontalExpansion = 100;
     public const double VerticalExpansion = 100;
+    public static BitmapImage? BitmapToBitmapImage(Bitmap? bitmap)
+    {
+        if (bitmap == null)
+            return null;
+        try
+        {
+            BitmapImage bitmapImage = new BitmapImage();
+            using MemoryStream ms = new MemoryStream();
+
+            bitmap.Save(ms, ImageFormat.Png);
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = ms;
+            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapImage.EndInit();
+            bitmapImage.Freeze();
+
+            return bitmapImage;
+        }
+        catch (Exception e)
+        {
+            LoggerService.LogError(e);
+            return null;
+        }
+    }
     
     public static Dictionary<TKey, TaskModel> MergeTaskModels<TKey>(
         this IEnumerable<KeyValuePair<TKey, TaskModel>>? taskModels,

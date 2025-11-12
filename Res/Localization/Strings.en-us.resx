@@ -461,4 +461,7 @@
     <data name="AlignToPixels" xml:space="preserve">
         <value>Whether to align to pixels</value>
     </data>
+    <data name="ScreenshotFailed" xml:space="preserve">
+        <value>Screenshot Failed</value>
+    </data>
 </root>

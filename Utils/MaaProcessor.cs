@@ -432,6 +432,7 @@ public class MaaProcessor
             }
             else
             {
+                Growls.Error("解析图片数据失败！");
                 return null;
             }
 
@@ -534,7 +535,10 @@ public class MaaProcessor
         var status = maaController.Screencap().Wait();
         Console.WriteLine(status);
         if (status != MaaJobStatus.Succeeded)
+        {
+            Growls.Error("ScreenshotFailed".GetLocalizationString()); 
             return buffer;
+        }
         maaController.GetCachedImage(buffer);
         return buffer;
     }

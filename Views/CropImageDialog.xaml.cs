@@ -1,22 +1,29 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using HandyControl.Controls;
-using HandyControl.Data;
 using MFATools.Utils;
-using MFATools.Controls;
 using Microsoft.Win32;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using Path = System.IO.Path;
+using Point = System.Windows.Point;
+using Color = System.Drawing.Color;
+using DashStyle = System.Drawing.Drawing2D.DashStyle;
+using Pen = System.Drawing.Pen;
 
 namespace MFATools.Views;
 
 public partial class CropImageDialog
 {
-    private Point _startPoint;
-    private Rectangle? _selectionRectangle;
+    // 原始图像（始终不变，用于恢复）
+    private Bitmap _originBitmap;
+    // 当前显示的图像（用于绘制矩形，每次刷新从_originBitmap复制）
+    private Bitmap _displayBitmap;
+    // 矩形绘制参数（像素坐标）
+    private (int X, int Y, int Width, int Height)? _currentRect;
+    private Point _startPoint; // 起始像素坐标
 
     public string? Output { get; set; }
     private List<int>? _outputRoi { get; set; }
@@ -35,81 +42,141 @@ public partial class CropImageDialog
         set => _outputOriginRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
 
-    public bool AlignToPixels { get; set; } = true;
+
+    // 缩放比例（屏幕显示尺寸 / 实际像素尺寸）
+    private double _scale = 1.0;
+    private double _originWidth;
+    private double _originHeight;
+    private const double ZoomFactor = 1.1;
+    private Point _dragStartPoint;
+    private bool _isDragging;
 
     public CropImageDialog()
     {
         InitializeComponent();
+        // 加载原始图像
         Task.Run(() =>
         {
-            var image = MaaProcessor.Instance.GetBitmapImage();
-            Growls.Process(() => { UpdateImage(image); });
+            _originBitmap = MaaProcessor.Instance.GetBitmap();
+            if (_originBitmap == null) return;
+
+            // 初始化显示图像（复制原始图像）
+            _displayBitmap = new Bitmap(_originBitmap);
+            var imageSource = MFAExtensions.BitmapToBitmapImage(_displayBitmap);
+
+            // 回到UI线程更新
+            Dispatcher.Invoke(() => UpdateImage(imageSource));
         });
     }
 
     protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);
+        _originBitmap?.Dispose();
+        _displayBitmap?.Dispose();
     }
 
-
-    public void UpdateImage(BitmapImage? _imageSource)
+    // 更新图像显示（计算初始缩放）
+    public void UpdateImage(BitmapImage? imageSource)
     {
-        if (_imageSource == null)
-            return;
+        if (imageSource == null) return;
+
         LoadingCircle.Visibility = Visibility.Collapsed;
         ImageArea.Visibility = Visibility.Visible;
-        image.Source = _imageSource;
+        image.Source = imageSource;
+        image.SnapsToDevicePixels = true;
+        SnapsToDevicePixels = true;
 
-        originWidth = _imageSource.PixelWidth;
-        originHeight = _imageSource.PixelHeight;
+        _originWidth = imageSource.PixelWidth;
+        _originHeight = imageSource.PixelHeight;
 
-        double maxWidth = image.MaxWidth;
-        double maxHeight = image.MaxHeight;
+        // 计算初始缩放（适应窗口最大尺寸）
+        double maxWidth = Math.Min(1280, SystemParameters.PrimaryScreenWidth - 100);
+        double maxHeight = Math.Min(720, SystemParameters.PrimaryScreenHeight - 200);
+        double widthRatio = maxWidth / _originWidth;
+        double heightRatio = maxHeight / _originHeight;
+        _scale = Math.Min(widthRatio, heightRatio);
 
-        double widthRatio = maxWidth / originWidth;
-        double heightRatio = maxHeight / originHeight;
-        _scaleRatio = Math.Min(widthRatio, heightRatio);
+        // 设置显示尺寸（基于缩放比例）
+        image.Width = _originWidth * _scale;
+        image.Height = _originHeight * _scale;
 
-        image.Width = originWidth * _scaleRatio;
-        image.Height = originHeight * _scaleRatio;
-
-        SelectionCanvas.Width = image.Width;
-        SelectionCanvas.Height = image.Height;
-        Width = image.Width + 20;
-        Height = image.Height + 100;
+        // 窗口尺寸调整
+        Width = image.Width + 40;
+        Height = image.Height + 120;
         RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
         CenterWindow();
     }
 
-    private double originWidth;
-    private double originHeight;
-    private const double ZoomFactor = 1.1; // 缩放因子
-    private Point _dragStartPoint;
-    private bool _isDragging;
-    private double _scaleRatio;
-    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    // 将屏幕坐标转换为实际像素坐标
+    private (int X, int Y) ScreenToPixel(Point screenPos)
     {
-        Close();
+        int x = (int)Math.Ceiling(screenPos.X);
+        int y = (int)Math.Ceiling(screenPos.Y);
+        // 边界限制
+        x = Math.Clamp(x, 0, (int)_originWidth);
+        y = Math.Clamp(y, 0, (int)_originHeight);
+        return (x, y);
     }
-    public void CenterWindow()
+
+    // 刷新显示（恢复原始图像并绘制矩形）
+    private void RefreshDisplay()
+    {
+        if (_originBitmap == null) return;
+
+        // 从原始图像复制（清除之前的矩形）
+        lock (_originBitmap)
+        {
+            _displayBitmap?.Dispose();
+            _displayBitmap = new Bitmap(_originBitmap);
+        }
+
+        SelectionCanvas.Children.Clear();
+        _selectionRectangle = null;
+        // 如果有矩形，绘制到显示图像上
+        if (_currentRect.HasValue)
+        {
+            var rect = _currentRect.Value;
+            using (var g = Graphics.FromImage(_displayBitmap))
+            {
+                // 抗锯齿绘制
+                g.SmoothingMode = SmoothingMode.None;
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                // 绘制虚线矩形
+                using (var pen = new Pen(Color.FromArgb(SettingDialog.DefaultLineColor.Color.R, SettingDialog.DefaultLineColor.Color.G, SettingDialog.DefaultLineColor.Color.B), SettingDialog.DefaultLineThickness))
+                {
+                    pen.DashStyle = DashStyle.Dash;
+                    pen.DashPattern =
+                    [
+                        2,
+                        2
+                    ];
+                    // 绘制时调整1px偏移，确保像素对齐
+                    g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+                }
+            }
+        }
+
+        // 更新UI显示
+        image.Source = MFAExtensions.BitmapToBitmapImage(_displayBitmap);
+    }
+
+    private void CenterWindow()
     {
         var screenWidth = SystemParameters.PrimaryScreenWidth;
         var screenHeight = SystemParameters.PrimaryScreenHeight;
-
-        var left = (screenWidth - Width) / 2;
-        var top = (screenHeight - Height) / 2;
-
-        this.Left = left;
-        this.Top = top;
+        Left = (screenWidth - Width) / 2;
+        Top = (screenHeight - Height) / 2;
     }
 
+    // 鼠标滚轮缩放
     private void Dialog_MouseWheel(object sender, MouseWheelEventArgs e)
     {
         var isCtrlKeyPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
         if (isCtrlKeyPressed)
         {
-            Point mousePosition = e.GetPosition(SelectionCanvas);
+            Point mousePosition = e.GetPosition(image);
             double scaleX = sfr.ScaleX;
             double scaleY = sfr.ScaleY;
 
@@ -125,11 +192,10 @@ public partial class CropImageDialog
             CheckZoomBounds(mousePosition, scaleX, scaleY);
         }
     }
-
     private void CheckZoomBounds(Point mousePosition, double scaleX, double scaleY)
     {
-        double imageWidth = SelectionCanvas.ActualWidth;
-        double imageHeight = SelectionCanvas.ActualHeight;
+        double imageWidth = image.ActualWidth;
+        double imageHeight = image.ActualHeight;
 
         if (mousePosition.X >= 0 && mousePosition.X <= imageWidth)
         {
@@ -150,6 +216,7 @@ public partial class CropImageDialog
         }
     }
 
+    // 鼠标按下（开始绘制矩形或拖动）
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
         var isCtrlKeyPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
@@ -163,49 +230,32 @@ public partial class CropImageDialog
         }
         else
         {
+            // 开始绘制矩形
             var position = e.GetPosition(image);
-            var canvasPosition = e.GetPosition(SelectionCanvas);
-
+            var canvasPosition = e.GetPosition(image);
             if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 && canvasPosition is { X: > -5, Y: > -5 })
             {
-                if (_selectionRectangle != null)
-                {
-                    SelectionCanvas.Children.Remove(_selectionRectangle);
-                }
-
                 if (position.X < 0) position.X = 0;
                 if (position.Y < 0) position.Y = 0;
                 if (position.X > image.ActualWidth) position.X = image.ActualWidth;
                 if (position.Y > image.ActualHeight) position.Y = image.ActualHeight;
-
-                double actualX = AlignToPixelCoord(position.X);
-                double actualY = AlignToPixelCoord(position.Y);
-                _startPoint = new Point(PixelToScreenCoord(actualX), PixelToScreenCoord(actualY));
-
-                _selectionRectangle = new Rectangle
-                {
-                    Stroke = SettingDialog.DefaultLineColor,
-                    StrokeThickness = SettingDialog.DefaultLineThickness,
-                    StrokeDashArray =
-                    {
-                        2
-                    }
-                };
-
-                Canvas.SetLeft(_selectionRectangle, _startPoint.X);
-                Canvas.SetTop(_selectionRectangle, _startPoint.Y);
-
-                SelectionCanvas.Children.Add(_selectionRectangle);
-
-                Mouse.Capture(SelectionCanvas);
+                var (actualX, actualY) = ScreenToPixel(position);
+                _startPoint = new Point(actualX, actualY);
+                _currentRect = (actualX, actualY, 0, 0);
+                RefreshDisplay(); // 初始刷新（清空之前的矩形）
+                Mouse.Capture(image);
             }
         }
     }
 
+    // 鼠标移动（更新矩形或拖动）
     private void Canvas_MouseMove(object sender, MouseEventArgs e)
     {
-        var position = e.GetPosition(image);
-        MousePositionText.Text = $"[ {(int)(position.X / _scaleRatio)}, {(int)(position.Y / _scaleRatio)} ]";
+        // 更新鼠标位置文本（像素坐标）
+        var screenPos = e.GetPosition(image);
+        var (pixelX, pixelY) = ScreenToPixel(screenPos);
+        MousePositionText.Text = $"[ {pixelX}, {pixelY} ]";
+
         var isCtrlKeyPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
         if (_isDragging && isCtrlKeyPressed && e.LeftButton == MouseButtonState.Pressed)
         {
@@ -226,139 +276,88 @@ public partial class CropImageDialog
 
             _dragStartPoint = Dposition;
         }
-        else
+        else if (_currentRect.HasValue && e.LeftButton == MouseButtonState.Pressed)
         {
-            if (_selectionRectangle == null)
-                return;
-            if (e.LeftButton != MouseButtonState.Pressed)
-                return;
+            if (screenPos.X < 0) screenPos.X = 0;
+            if (screenPos.Y < 0) screenPos.Y = 0;
+            if (screenPos.X > image.ActualWidth) screenPos.X = image.ActualWidth;
+            if (screenPos.Y > image.ActualHeight) screenPos.Y = image.ActualHeight;
+            var (actualX, actualY) = ScreenToPixel(screenPos);
+            double x = Math.Min(_startPoint.X, actualX);
+            double y = Math.Min(_startPoint.Y, actualY);
+            // 确保最小尺寸
+            var w = Math.Max(Math.Abs(_startPoint.X - actualX), 1);
+            var h = Math.Max(Math.Abs(_startPoint.Y - actualY), 1);
 
-            var pos = e.GetPosition(SelectionCanvas);
+            _currentRect = (Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(w), Convert.ToInt32(h));
+            DrawRectangle(Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(w), Convert.ToInt32(h));
 
-            double startX = AlignToPixelCoord(_startPoint.X);
-            double startY = AlignToPixelCoord(_startPoint.Y);
-            double currentX = AlignToPixelCoord(pos.X);
-            double currentY = AlignToPixelCoord(pos.Y);
-
-            // 2. 计算实际像素坐标的矩形参数
-            double actualX = Math.Min(startX, currentX);
-            double actualY = Math.Min(startY, currentY);
-            double actualW = Math.Abs(startX - currentX);
-            double actualH = Math.Abs(startY - currentY);
-
-            // 3. 转回屏幕坐标（并应用边界检查）
-            double x = PixelToScreenCoord(actualX);
-            double y = PixelToScreenCoord(actualY);
-            double w = PixelToScreenCoord(actualW);
-            double h = PixelToScreenCoord(actualH);
-
-            if (x < 0)
-            {
-                x = 0;
-                w = PixelToScreenCoord(actualX + actualW); // 重新计算宽度
-            }
-            if (y < 0)
-            {
-                y = 0;
-                h = PixelToScreenCoord(actualY + actualH); // 重新计算高度
-            }
-
-            if (x + w > SelectionCanvas.ActualWidth)
-            {
-                w = SelectionCanvas.ActualWidth - x;
-            }
-
-            if (y + h > SelectionCanvas.ActualHeight)
-            {
-                h = SelectionCanvas.ActualHeight - y;
-            }
-
-            _selectionRectangle.Width = w;
-            _selectionRectangle.Height = h;
-
-            Canvas.SetLeft(_selectionRectangle, x);
-            Canvas.SetTop(_selectionRectangle, y);
-
-            MousePositionText.Text =
-                $"[ {(int)(x / _scaleRatio)}, {(int)(y / _scaleRatio)}, {(int)(w / _scaleRatio)}, {(int)(h / _scaleRatio)} ]";
+            // 更新矩形坐标文本
+            MousePositionText.Text = $"[ {Convert.ToInt32(x)}, {Convert.ToInt32(y)}, {Convert.ToInt32(w)}, {Convert.ToInt32(h)} ]";
         }
     }
 
+    // 鼠标释放
     private void Canvas_MouseUp(object sender, MouseButtonEventArgs e)
     {
-        if (_selectionRectangle == null)
-            return;
-        if (_isDragging)
-        {
-            _isDragging = false;
-        }
-        // 释放鼠标捕获
+        _isDragging = false;
+        RefreshDisplay(); // 刷新显示新矩形
         Mouse.Capture(null);
     }
 
+    // 保存裁剪区域
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectionRectangle == null)
+        if (!_currentRect.HasValue)
         {
             Growls.WarningGlobal("请选择一个区域");
             return;
         }
 
-        var x = Canvas.GetLeft(_selectionRectangle) / _scaleRatio;
-        var y = Canvas.GetTop(_selectionRectangle) / _scaleRatio;
-        var w = _selectionRectangle.Width / _scaleRatio;
-        var h = _selectionRectangle.Height / _scaleRatio;
-        if (AlignToPixels)
-        {
-            x = Math.Round(x);
-            y = Math.Round(y);
-            w = Math.Round(w);
-            h = Math.Round(h);
-        }
-
-        SaveCroppedImage(x, y, w, h);
+        var (x, y, width, height) = _currentRect.Value;
+        SaveCroppedImage(x, y, width, height);
     }
 
-    private void SaveCroppedImage(double x, double y, double width, double height)
+    // 裁剪并保存图像
+    private void SaveCroppedImage(int x, int y, int width, int height)
     {
-        if (width < 1 || !double.IsNormal(width)) width = 1;
-        if (height < 1 || !double.IsNormal(height)) height = 1;
-        // 创建BitmapImage对象
-        if (image.Source is BitmapImage bitmapImage)
+        if (_originBitmap == null) return;
+
+        // 边界检查
+        x = Math.Clamp(x, 0, _originBitmap.Width - 1);
+        y = Math.Clamp(y, 0, _originBitmap.Height - 1);
+        width = Math.Clamp(width, 1, _originBitmap.Width - x);
+        height = Math.Clamp(height, 1, _originBitmap.Height - y);
+
+        // 计算原始ROI和扩展ROI
+        OutputOriginRoi = new List<int>
         {
-            OutputOriginRoi =
-            [
-                (int)x,
-                (int)y,
-                (int)width,
-                (int)height
-            ];
-            var roiX = Math.Max(x - MFAExtensions.HorizontalExpansion / 2, 0);
-            var roiY = Math.Max(y - MFAExtensions.VerticalExpansion / 2, 0);
-            var roiW = Math.Min(width + MFAExtensions.HorizontalExpansion, bitmapImage.PixelWidth - roiX);
-            var roiH = Math.Min(height + MFAExtensions.VerticalExpansion, bitmapImage.PixelHeight - roiY);
-            OutputRoi = new List<int>
-            {
-                (int)roiX,
-                (int)roiY,
-                (int)roiW,
-                (int)roiH
-            };
-            // 创建WriteableBitmap对象并加载BitmapImage
-            var writeableBitmap = new WriteableBitmap(bitmapImage);
+            x,
+            y,
+            width,
+            height
+        };
+        int roiX = Math.Max(x - 50, 0); // 原代码中100/2=50
+        int roiY = Math.Max(y - 50, 0);
+        int roiW = Math.Min(width + 100, _originBitmap.Width - roiX);
+        int roiH = Math.Min(height + 100, _originBitmap.Height - roiY);
+        OutputRoi = new List<int>
+        {
+            roiX,
+            roiY,
+            roiW,
+            roiH
+        };
 
-            // 创建一个用于存储裁剪区域的矩形
-            var cropRect = new Int32Rect((int)x, (int)y, (int)width, (int)height);
+        try
+        {
+            // 从原始图像裁剪（避免包含绘制的矩形）
+            using var croppedBitmap = _originBitmap.Clone(
+                new System.Drawing.Rectangle(x, y, width, height),
+                _originBitmap.PixelFormat
+            );
 
-            // 创建一个字节数组来保存裁剪区域的像素数据
-            var croppedPixels = new byte[cropRect.Width * cropRect.Height * 4];
-            writeableBitmap.CopyPixels(cropRect, croppedPixels, cropRect.Width * 4, 0);
-
-            // 创建一个新的WriteableBitmap来保存裁剪后的图像
-            var croppedBitmap = new WriteableBitmap(cropRect.Width, cropRect.Height, 96, 96, PixelFormats.Bgra32, null);
-            croppedBitmap.WritePixels(new Int32Rect(0, 0, cropRect.Width, cropRect.Height), croppedPixels,
-                cropRect.Width * 4, 0);
-
+            // 保存文件
             var saveFileDialog = new SaveFileDialog
             {
                 Filter = "ImageFilter".GetLocalizationString(),
@@ -367,159 +366,100 @@ public partial class CropImageDialog
 
             if (saveFileDialog.ShowDialog() == true)
             {
-                var encoder = GetEncoderByExtension(saveFileDialog.FileName);
-                encoder.Frames.Add(BitmapFrame.Create(croppedBitmap));
-
-                using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
-                {
-                    encoder.Save(fileStream);
-                }
-
-                // 设置 Output 属性为保存的文件名和路径
-                Output = System.IO.Path.GetFileName(saveFileDialog.FileName);
+                croppedBitmap.Save(saveFileDialog.FileName, GetImageFormat(saveFileDialog.FileName));
+                Output = Path.GetFileName(saveFileDialog.FileName);
                 DialogResult = true;
                 Close();
             }
         }
-    }
-
-    private BitmapEncoder GetEncoderByExtension(string fileName)
-    {
-        var extension = System.IO.Path.GetExtension(fileName).ToLower();
-
-        switch (extension)
+        catch (Exception ex)
         {
-            case ".jpg":
-            case ".jpeg":
-                return new JpegBitmapEncoder();
-            case ".bmp":
-                return new BmpBitmapEncoder();
-            default:
-                return new PngBitmapEncoder();
+            Growls.ErrorGlobal($"保存失败：{ex.Message}");
         }
     }
 
-    private void Screenshot(object sender, RoutedEventArgs e)
+    // 根据文件扩展名获取图像格式
+    private System.Drawing.Imaging.ImageFormat GetImageFormat(string fileName)
     {
-        new Screenshot().Start();
-
-        // if (openFileDialog.ShowDialog() == true)
-        // {
-        //     try
-        //     {
-        //         BitmapImage bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
-        //         UpdateImage(bitmapImage);
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         ErrorView errorView = new ErrorView(ex, false);
-        //         errorView.Show();
-        //     }
-        // }
+        return Path.GetExtension(fileName).ToLower() switch
+        {
+            ".jpg" or ".jpeg" => System.Drawing.Imaging.ImageFormat.Jpeg,
+            ".bmp" => System.Drawing.Imaging.ImageFormat.Bmp,
+            _ => System.Drawing.Imaging.ImageFormat.Png
+        };
     }
 
+    // 加载图像
     private void Load(object sender, RoutedEventArgs e)
     {
-        OpenFileDialog openFileDialog = new OpenFileDialog
+        var openFileDialog = new OpenFileDialog
         {
-            Title = "LoadImageTitle".GetLocalizationString()
+            Title = "LoadImageTitle".GetLocalizationString(),
+            Filter = "ImageFilter".GetLocalizationString()
         };
-        openFileDialog.Filter = "ImageFilter".GetLocalizationString();
 
         if (openFileDialog.ShowDialog() == true)
         {
             try
             {
-                BitmapImage bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
-                UpdateImage(bitmapImage);
+                // 替换原始图像
+                _originBitmap?.Dispose();
+                _originBitmap = new Bitmap(openFileDialog.FileName);
+                _currentRect = null;
+                RefreshDisplay();
+                UpdateImage(MFAExtensions.BitmapToBitmapImage(_originBitmap));
             }
             catch (Exception ex)
             {
-                ErrorView errorView = new ErrorView(ex, false);
-                errorView.Show();
+                new ErrorView(ex, false).Show();
             }
         }
     }
+    private System.Windows.Shapes.Rectangle? _selectionRectangle; // 画布上的选择矩形
+    // 绘制矩形（统一缩放与边界处理）
     public void DrawRectangle(int x, int y, int width, int height)
     {
-        // 边界检查：使用实际像素宽高（originWidth/originHeight）而非屏幕宽高（image.Width）
-        if (x < 1) x = 1;
-        if (y < 1) y = 1;
-        if (width < 1) width = 1;
-        if (height < 1) height = 1;
-        // 实际像素坐标不能超过图像的实际像素宽高
-        if (x > originWidth) x = (int)originWidth;
-        if (y > originHeight) y = (int)originHeight;
-        if (x + width > originWidth) width = (int)(originWidth - x);
-        if (y + height > originHeight) height = (int)(originHeight - y);
+        // 像素坐标边界检查
+        x = Math.Clamp(x, 0, (int)_originWidth - 1);
+        y = Math.Clamp(y, 0, (int)_originHeight - 1);
+        width = Math.Clamp(width, 1, (int)_originWidth - x) + 1;
+        height = Math.Clamp(height, 1, (int)_originHeight - y) + 1;
 
-        // 移除旧矩形
+        // 清除之前的矩形
         if (_selectionRectangle != null)
-        {
             SelectionCanvas.Children.Remove(_selectionRectangle);
-        }
 
-        // 计算屏幕坐标（实际像素坐标 -> 屏幕坐标）
-        double scaledX = PixelToScreenCoord(x);
-        double scaledY = PixelToScreenCoord(y);
-        double scaledWidth = PixelToScreenCoord(width);
-        double scaledHeight = PixelToScreenCoord(height);
-
-        // 若启用像素对齐，确保屏幕坐标为整数（避免半像素偏移）
-        if (AlignToPixels)
-        {
-            scaledX = Math.Round(scaledX);
-            scaledY = Math.Round(scaledY);
-            scaledWidth = Math.Round(scaledWidth);
-            scaledHeight = Math.Round(scaledHeight);
-        }
-
-        // 创建新矩形
-        _selectionRectangle = new Rectangle
+        // 创建矩形（保持样式一致）
+        _selectionRectangle = new System.Windows.Shapes.Rectangle
         {
             Stroke = SettingDialog.DefaultLineColor,
             StrokeThickness = SettingDialog.DefaultLineThickness,
-            StrokeDashArray = { 2 },
-            Width = scaledWidth,
-            Height = scaledHeight
+            StrokeDashArray =
+            {
+                2,
+                2
+            },
+            Width = width,
+            Height = height,
+            RenderTransform = new TranslateTransform(x - 1, y - 1)
         };
-
-        Canvas.SetLeft(_selectionRectangle, scaledX);
-        Canvas.SetTop(_selectionRectangle, scaledY);
         SelectionCanvas.Children.Add(_selectionRectangle);
     }
 
+    // 编辑矩形（通过对话框输入坐标）
     private void Edit(object sender, RoutedEventArgs e)
     {
-        var dialog = new RoiEditorDialog(_selectionRectangle, _scaleRatio);
+        var initialRect = _currentRect ?? (0, 0, 1, 1);
+        var dialog = new RoiEditorDialog(initialRect);
         if (dialog.ShowDialog().IsTrue())
         {
-            DrawRectangle(dialog.X.ToNumber(), dialog.Y.ToNumber(), dialog.W.ToNumber(1), dialog.H.ToNumber(1));
+            _currentRect = (dialog.X.ToNumber(), dialog.Y.ToNumber(), dialog.W.ToNumber(), dialog.H.ToNumber());
+            RefreshDisplay();
         }
     }
-    /// <summary>
-    /// 将屏幕坐标转换为实际像素坐标，并根据_alignToPixels进行整数对齐
-    /// </summary>
-    /// <param name="screenCoord">屏幕坐标（受缩放影响）</param>
-    /// <returns>对齐后的实际像素坐标</returns>
-    private double AlignToPixelCoord(double screenCoord)
-    {
-        // 屏幕坐标 -> 实际像素坐标（除以缩放比例）
-        double pixelCoord = screenCoord / _scaleRatio;
-        // 若启用对齐，则四舍五入到最近的整数像素
-        return AlignToPixels ? Math.Round(pixelCoord) : pixelCoord;
-    }
 
-    /// <summary>
-    /// 将实际像素坐标转换为屏幕坐标（用于显示）
-    /// </summary>
-    private double PixelToScreenCoord(double pixelCoord)
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
-        return pixelCoord * _scaleRatio;
-    }
-
-    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
-    {
-        AlignToPixels = (sender as CheckBox)?.IsChecked ?? true;
+        Close();
     }
 }

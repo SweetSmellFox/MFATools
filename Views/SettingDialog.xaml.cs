@@ -8,7 +8,7 @@ namespace MFATools.Views;
 public partial class SettingDialog
 {
     // 默认值常量
-    public static double DefaultLineThickness = 1.5;
+    public static float DefaultLineThickness = 1;
     public static SolidColorBrush DefaultLineColor = Brushes.Red;
 
     public SettingDialog()
@@ -89,7 +89,7 @@ public partial class SettingDialog
     {
         try
         {
-            DefaultLineThickness = LineThicknessNumeric.Value;
+            DefaultLineThickness = (float)LineThicknessNumeric.Value;
             DefaultLineColor = LineColorPicker.SelectedBrush;
         }
         catch (Exception ex)
