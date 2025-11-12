@@ -393,42 +393,60 @@ public partial class ColorExtractionDialog
     }
 
     // 提取HSV范围
+  // 提取HSV范围
     private void GetHSVRange(int x, int y, int width, int height)
     {
-        double minH = 360, minS = 1, minV = 1;
-        double maxH = 0, maxS = 0, maxV = 0;
+        // OpenCV中HSV范围：H(0-180), S(0-255), V(0-255)
+        // 初始化最小值为范围最大值，最大值为范围最小值，确保能正确更新
+        int minH = 180, minS = 255, minV = 255;
+        int maxH = 0, maxS = 0, maxV = 0;
 
         for (int i = x; i < x + width; i++)
         {
             for (int j = y; j < y + height; j++)
             {
                 Color pixel = _originBitmap.GetPixel(i, j);
+                // 转换为标准HSV（H:0-360, S:0-1, V:0-1）
                 ColorToHSV(pixel, out double h, out double s, out double v);
 
-                minH = Math.Min(minH, h);
-                minS = Math.Min(minS, s);
-                minV = Math.Min(minV, v);
-                maxH = Math.Max(maxH, h);
-                maxS = Math.Max(maxS, s);
-                maxV = Math.Max(maxV, v);
+                // 转换为OpenCV范围：
+                // H: 0-360 → 0-180（除以2）
+                // S/V: 0-1 → 0-255（乘以255）
+                int cvH = (int)Math.Round(h / 2);
+                int cvS = (int)Math.Round(s * 255);
+                int cvV = (int)Math.Round(v * 255);
+
+                // 边界限制（确保在OpenCV范围内）
+                cvH = Math.Clamp(cvH, 0, 180);
+                cvS = Math.Clamp(cvS, 0, 255);
+                cvV = Math.Clamp(cvV, 0, 255);
+
+                // 更新最小最大值
+                minH = Math.Min(minH, cvH);
+                minS = Math.Min(minS, cvS);
+                minV = Math.Min(minV, cvV);
+                maxH = Math.Max(maxH, cvH);
+                maxS = Math.Max(maxS, cvS);
+                maxV = Math.Max(maxV, cvV);
             }
         }
 
+        // 输出OpenCV范围的HSV值
         OutputLower = new List<int>
         {
-            (int)Math.Round(minH),
-            (int)Math.Round(minS * 100),
-            (int)Math.Round(minV * 100)
+            minH,
+            minS,
+            minV
         };
         OutputUpper = new List<int>
         {
-            (int)Math.Round(maxH),
-            (int)Math.Round(maxS * 100),
-            (int)Math.Round(maxV * 100)
+            maxH,
+            maxS,
+            maxV
         };
     }
 
-    // RGB转HSV
+// RGB转HSV（保持标准HSV计算，后续再转换为OpenCV范围）
     private void ColorToHSV(System.Drawing.Color color, out double hue, out double saturation, out double value)
     {
         double r = color.R / 255.0;
@@ -443,6 +461,7 @@ public partial class ColorExtractionDialog
 
         if (delta == 0)
         {
+            // 灰度色：H为0，S为0
             hue = 0;
             saturation = 0;
         }
@@ -450,6 +469,7 @@ public partial class ColorExtractionDialog
         {
             saturation = delta / cMax;
 
+            // 计算标准Hue（0-360）
             hue = cMax switch
             {
                 var _ when r == cMax => ((g - b) / delta) % 6,
@@ -461,7 +481,6 @@ public partial class ColorExtractionDialog
             if (hue < 0) hue += 360;
         }
     }
-
     // 提取灰度范围
     private void GetGrayRange(int x, int y, int width, int height)
     {
