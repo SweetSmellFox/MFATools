@@ -193,7 +193,11 @@ public class AttributeTag : Tag
 
     private void Copy(object? sender, RoutedEventArgs? e)
     {
-        Clipboard.SetDataObject(Attribute.ToString());
+        string attributeText = Attribute.ToString();
+
+        attributeText = attributeText.Replace("recommended roi", "roi");
+
+        Clipboard.SetDataObject(attributeText);
         Tip();
     }
 
