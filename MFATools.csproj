@@ -21,10 +21,10 @@
     <PackageReference Include="HandyControls" Version="3.6.0" />
     <PackageReference Include="HandyControls.Lang.zh-CN" Version="3.6.0" />
     <PackageReference Include="Maa.AgentBinary" Version="1.1.0" />
-    <PackageReference Include="Maa.Framework.Binding.Native" Version="4.4.0-preview.1" />
-    <PackageReference Include="Maa.Framework.Native" Version="4.4.0-preview.1" />
-    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="4.4.0" />
-    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="4.4.0" />
+    <PackageReference Include="Maa.Framework.Binding.Native" Version="5.0.0-preview.2" />
+    <PackageReference Include="Maa.Framework.Native" Version="5.0.0-preview.2" />
+    <PackageReference Include="Maa.Framework.Runtime.win-arm64" Version="5.0.1" />
+    <PackageReference Include="Maa.Framework.Runtime.win-x64" Version="5.0.1" />
   </ItemGroup>
     <!-- Info -->
     <PropertyGroup>
@@ -74,10 +74,10 @@
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
         <PackageReference Include="GraphSharp" Version="1.1.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Serilog" Version="4.3.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-        <PackageReference Include="System.Drawing.Common" Version="9.0.5" />
+        <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
         <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
     </ItemGroup>
 	

@@ -29,17 +29,17 @@ public partial class SettingDialog
                 ],
                 "AdbControlScreenCapType");
             MainWindow.Instance?.AddBindSettingOption(settingPanel, "InputModeOption",
-                ["MiniTouch", "MaaTouch", "AdbInput", "AutoDetect"],
+                ["MaaTouch", "MiniTouch", "AdbInput", "AutoDetect"],
                 "AdbControlInputType");
         }
         else
         {
             MainWindow.Instance?.AddSettingOption(settingPanel, "CaptureModeOption",
-                ["FramePool", "DXGIDesktopDup", "GDI"],
+                ["FramePool", "GDI", "DXGI_DesktopDup", "DXGI_DesktopDup_Window", "PrintWindow", "ScreenDC"],
                 "Win32ControlScreenCapType");
 
             MainWindow.Instance?.AddSettingOption(settingPanel, "InputModeOption",
-                ["Seize", "SendMessage"],
+                ["Seize", "SendMessage", "PostMessage", "LegacyEvent", "PostThreadMessage"],
                 "Win32ControlInputType");
         }
         MainWindow.Instance?.AddLanguageOption(settingPanel);

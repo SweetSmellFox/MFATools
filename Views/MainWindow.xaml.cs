@@ -343,8 +343,8 @@ public partial class MainWindow
     {
         return DataSet.GetData("AdbControlInputType", 0) switch
         {
-            0 => AdbInputMethods.MinitouchAndAdbKey,
-            1 => AdbInputMethods.Maatouch,
+            0 => AdbInputMethods.Maatouch,
+            1 => AdbInputMethods.MinitouchAndAdbKey,
             2 => AdbInputMethods.AdbShell,
             3 => AdbInputMethods.All,
             _ => 0
@@ -387,10 +387,13 @@ public partial class MainWindow
     private Win32ScreencapMethod ConfigureWin32ScreenCapTypes()
     {
         return DataSet.GetData("Win32ControlScreenCapType", 0) switch
-        {
+        { 
             0 => Win32ScreencapMethod.FramePool,
-            1 => Win32ScreencapMethod.DXGIDesktopDup,
-            2 => Win32ScreencapMethod.GDI,
+            1 => Win32ScreencapMethod.GDI,
+            2 => Win32ScreencapMethod.DXGI_DesktopDup,
+            3 => Win32ScreencapMethod.DXGI_DesktopDup_Window,
+            4 => Win32ScreencapMethod.PrintWindow,
+            5 => Win32ScreencapMethod.ScreenDC,
             _ => 0
         };
     }
@@ -401,6 +404,9 @@ public partial class MainWindow
         {
             0 => Win32InputMethod.Seize,
             1 => Win32InputMethod.SendMessage,
+            2 => Win32InputMethod.PostMessage,
+            3 => Win32InputMethod.LegacyEvent,
+            4 => Win32InputMethod.PostThreadMessage,
             _ => 0
         };
     }

@@ -35,6 +35,8 @@ public partial class CropImageDialog
         set => _outputOriginRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
 
+    public bool AlignToPixels { get; set; } = true;
+
     public CropImageDialog()
     {
         InitializeComponent();
@@ -176,7 +178,9 @@ public partial class CropImageDialog
                 if (position.X > image.ActualWidth) position.X = image.ActualWidth;
                 if (position.Y > image.ActualHeight) position.Y = image.ActualHeight;
 
-                _startPoint = position;
+                double actualX = AlignToPixelCoord(position.X);
+                double actualY = AlignToPixelCoord(position.Y);
+                _startPoint = new Point(PixelToScreenCoord(actualX), PixelToScreenCoord(actualY));
 
                 _selectionRectangle = new Rectangle
                 {
@@ -231,22 +235,32 @@ public partial class CropImageDialog
 
             var pos = e.GetPosition(SelectionCanvas);
 
-            var x = Math.Min(pos.X, _startPoint.X);
-            var y = Math.Min(pos.Y, _startPoint.Y);
+            double startX = AlignToPixelCoord(_startPoint.X);
+            double startY = AlignToPixelCoord(_startPoint.Y);
+            double currentX = AlignToPixelCoord(pos.X);
+            double currentY = AlignToPixelCoord(pos.Y);
 
-            var w = Math.Abs(pos.X - _startPoint.X);
-            var h = Math.Abs(pos.Y - _startPoint.Y);
+            // 2. 计算实际像素坐标的矩形参数
+            double actualX = Math.Min(startX, currentX);
+            double actualY = Math.Min(startY, currentY);
+            double actualW = Math.Abs(startX - currentX);
+            double actualH = Math.Abs(startY - currentY);
+
+            // 3. 转回屏幕坐标（并应用边界检查）
+            double x = PixelToScreenCoord(actualX);
+            double y = PixelToScreenCoord(actualY);
+            double w = PixelToScreenCoord(actualW);
+            double h = PixelToScreenCoord(actualH);
 
             if (x < 0)
             {
                 x = 0;
-                w = _startPoint.X;
+                w = PixelToScreenCoord(actualX + actualW); // 重新计算宽度
             }
-
             if (y < 0)
             {
                 y = 0;
-                h = _startPoint.Y;
+                h = PixelToScreenCoord(actualY + actualH); // 重新计算高度
             }
 
             if (x + w > SelectionCanvas.ActualWidth)
@@ -294,8 +308,15 @@ public partial class CropImageDialog
         var y = Canvas.GetTop(_selectionRectangle) / _scaleRatio;
         var w = _selectionRectangle.Width / _scaleRatio;
         var h = _selectionRectangle.Height / _scaleRatio;
+        if (AlignToPixels)
+        {
+            x = Math.Round(x);
+            y = Math.Round(y);
+            w = Math.Round(w);
+            h = Math.Round(h);
+        }
 
-        SaveCroppedImage((int)x, (int)y, (int)w, (int)h);
+        SaveCroppedImage(x, y, w, h);
     }
 
     private void SaveCroppedImage(double x, double y, double width, double height)
@@ -421,39 +442,50 @@ public partial class CropImageDialog
     }
     public void DrawRectangle(int x, int y, int width, int height)
     {
-        if (x < 1 || !double.IsNormal(x)) x = 1;
-        if (y < 1 || !double.IsNormal(y)) y = 1;
-        if (width < 1 || !double.IsNormal(width)) width = 1;
-        if (height < 1 || !double.IsNormal(height)) height = 1;
-        if (x > image.Width) x = (int)image.Width;
-        if (y > image.Height) y = (int)image.Height;
-        if (x + width > image.Width) width = (int)image.Width - x;
-        if (y + height > image.Height) height = (int)image.Height - y;
+        // 边界检查：使用实际像素宽高（originWidth/originHeight）而非屏幕宽高（image.Width）
+        if (x < 1) x = 1;
+        if (y < 1) y = 1;
+        if (width < 1) width = 1;
+        if (height < 1) height = 1;
+        // 实际像素坐标不能超过图像的实际像素宽高
+        if (x > originWidth) x = (int)originWidth;
+        if (y > originHeight) y = (int)originHeight;
+        if (x + width > originWidth) width = (int)(originWidth - x);
+        if (y + height > originHeight) height = (int)(originHeight - y);
+
+        // 移除旧矩形
         if (_selectionRectangle != null)
         {
             SelectionCanvas.Children.Remove(_selectionRectangle);
         }
 
+        // 计算屏幕坐标（实际像素坐标 -> 屏幕坐标）
+        double scaledX = PixelToScreenCoord(x);
+        double scaledY = PixelToScreenCoord(y);
+        double scaledWidth = PixelToScreenCoord(width);
+        double scaledHeight = PixelToScreenCoord(height);
+
+        // 若启用像素对齐，确保屏幕坐标为整数（避免半像素偏移）
+        if (AlignToPixels)
+        {
+            scaledX = Math.Round(scaledX);
+            scaledY = Math.Round(scaledY);
+            scaledWidth = Math.Round(scaledWidth);
+            scaledHeight = Math.Round(scaledHeight);
+        }
+
+        // 创建新矩形
         _selectionRectangle = new Rectangle
         {
             Stroke = SettingDialog.DefaultLineColor,
             StrokeThickness = SettingDialog.DefaultLineThickness,
-            StrokeDashArray =
-            {
-                2
-            }
+            StrokeDashArray = { 2 },
+            Width = scaledWidth,
+            Height = scaledHeight
         };
-
-        var scaledX = x * _scaleRatio;
-        var scaledY = y * _scaleRatio;
-        var scaledWidth = width * _scaleRatio;
-        var scaledHeight = height * _scaleRatio;
 
         Canvas.SetLeft(_selectionRectangle, scaledX);
         Canvas.SetTop(_selectionRectangle, scaledY);
-        _selectionRectangle.Width = scaledWidth;
-        _selectionRectangle.Height = scaledHeight;
-
         SelectionCanvas.Children.Add(_selectionRectangle);
     }
 
@@ -464,5 +496,30 @@ public partial class CropImageDialog
         {
             DrawRectangle(dialog.X.ToNumber(), dialog.Y.ToNumber(), dialog.W.ToNumber(1), dialog.H.ToNumber(1));
         }
+    }
+    /// <summary>
+    /// 将屏幕坐标转换为实际像素坐标，并根据_alignToPixels进行整数对齐
+    /// </summary>
+    /// <param name="screenCoord">屏幕坐标（受缩放影响）</param>
+    /// <returns>对齐后的实际像素坐标</returns>
+    private double AlignToPixelCoord(double screenCoord)
+    {
+        // 屏幕坐标 -> 实际像素坐标（除以缩放比例）
+        double pixelCoord = screenCoord / _scaleRatio;
+        // 若启用对齐，则四舍五入到最近的整数像素
+        return AlignToPixels ? Math.Round(pixelCoord) : pixelCoord;
+    }
+
+    /// <summary>
+    /// 将实际像素坐标转换为屏幕坐标（用于显示）
+    /// </summary>
+    private double PixelToScreenCoord(double pixelCoord)
+    {
+        return pixelCoord * _scaleRatio;
+    }
+
+    private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+    {
+        AlignToPixels = (sender as CheckBox)?.IsChecked ?? true;
     }
 }

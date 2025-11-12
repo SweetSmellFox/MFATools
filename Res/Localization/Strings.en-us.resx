@@ -458,4 +458,7 @@
     <data name="LineColor" xml:space="preserve">
         <value>Line Color</value>
     </data>
+    <data name="AlignToPixels" xml:space="preserve">
+        <value>Whether to align to pixels</value>
+    </data>
 </root>

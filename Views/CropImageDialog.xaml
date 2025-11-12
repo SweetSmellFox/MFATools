@@ -129,6 +129,7 @@
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
+                <CheckBox VerticalAlignment="Center" Click="ButtonBase_OnClick" Content="{lex:Loc AlignToPixels}"> </CheckBox>
             </StackPanel>
         </Grid>
     </Border>

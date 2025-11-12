@@ -17,6 +17,7 @@ using MFATools.ViewModels;
 using MFATools.Views;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Drawing;
 
 namespace MFATools.Utils;
 
@@ -255,6 +256,11 @@ public class MaaProcessor
 
     public void SetCurrentTasker(MaaTasker? tasker = null)
     {
+        if (_currentTasker == null)
+        {
+            _currentTasker?.Stop().Wait();
+            _currentTasker?.Dispose();
+        }
         _currentTasker = tasker;
     }
 
@@ -387,7 +393,7 @@ public class MaaProcessor
                 !string.IsNullOrWhiteSpace(Config.AdbDevice.Config) ? Config.AdbDevice.Config : "{}")
             : new MaaWin32Controller(
                 Config.DesktopWindow.HWnd,
-                Config.DesktopWindow.ScreenCap, Config.DesktopWindow.Input,
+                Config.DesktopWindow.ScreenCap, Config.DesktopWindow.Input,Config.DesktopWindow.Input,
                 Config.DesktopWindow.Link,
                 Config.DesktopWindow.Check);
     }
@@ -412,18 +418,51 @@ public class MaaProcessor
             LoggerService.LogWarning(waringMessage);
         LoggerService.LogError(e.ToString());
     }
-
-    public BitmapImage? GetBitmapImage()
+    
+    public Bitmap? GetBitmap()
     {
         using var buffer = GetImage(GetCurrentTasker()?.Controller);
 
-        if (!buffer.TryGetEncodedData(out Stream? stream))
+        try
         {
-            Growls.ErrorGlobal("Handle为空！");
+            if (buffer.TryGetEncodedData(out Stream? stream))
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+                return new Bitmap(stream);
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"解码失败: {ex.Message}");
             return null;
         }
+    }
 
-        return CreateBitmapImage(stream);
+    private BitmapImage? BitmapToBitmapImage(Bitmap? bitmap)
+    {
+        if (bitmap == null)
+            return null;
+        BitmapImage bitmapImage = new BitmapImage();
+        using MemoryStream ms = new MemoryStream();
+
+        bitmap.Save(ms, bitmap.RawFormat);
+        bitmapImage.BeginInit();
+        bitmapImage.StreamSource = ms;
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.EndInit();
+        bitmapImage.Freeze();
+
+        return bitmapImage;
+    }
+
+    public BitmapImage? GetBitmapImage()
+    {
+        return BitmapToBitmapImage(GetBitmap());
     }
 
     public BitmapFrame? GetBitmapFrame()
@@ -450,7 +489,7 @@ public class MaaProcessor
             return result;
         }
     }
-    
+
     private static BitmapImage CreateBitmapImage(Stream stream)
     {
         var bitmapImage = new BitmapImage();

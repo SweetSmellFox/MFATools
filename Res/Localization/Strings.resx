@@ -486,4 +486,7 @@
     <data name="LineColor" xml:space="preserve">
         <value>线条颜色</value>
     </data>
+    <data name="AlignToPixels" xml:space="preserve">
+        <value>是否对齐像素</value>
+    </data>
 </root>
