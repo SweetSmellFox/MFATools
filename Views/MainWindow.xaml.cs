@@ -17,6 +17,7 @@ using MFATools.Utils.Converters;
 using MFATools.ViewModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using WPFLocalizeExtension.Extensions;
 using Attribute = MFATools.Utils.Attribute;
 using ComboBox = System.Windows.Controls.ComboBox;
@@ -48,6 +49,20 @@ public partial class MainWindow
         InitializeData();
         OCRHelper.Initialize();
         VersionChecker.CheckVersion();
+        Loaded += (_, _) =>
+        {
+            TaskManager.RunTask(async () =>
+            {
+                await Task.Delay(100);
+                Data.ControllerType = DataSet.GetData("ControllerType", 0);
+                await Task.Delay(500);
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    TabControl.SelectionChanged += TabControl_OnSelectionChanged;
+                    TabControl_OnSelectionChanged(null, null);
+                });
+            });
+        };
     }
 
     protected override void OnClosed(EventArgs e)
@@ -86,7 +101,10 @@ public partial class MainWindow
             }
         }
 
-        MaaProcessor.CurrentResources = new List<string> { MaaProcessor.ResourceBase };
+        MaaProcessor.CurrentResources = new List<string>
+        {
+            MaaProcessor.ResourceBase
+        };
         ConnectToMAA();
         return true;
     }
@@ -99,16 +117,14 @@ public partial class MainWindow
 
     private void TabControl_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (Data is not null)
+        if (adbTab != null && btnCustom != null)
         {
-            Data.IsAdb = adbTab.IsSelected;
             btnCustom.Visibility = adbTab.IsSelected ? Visibility.Visible : Visibility.Collapsed;
         }
         
         MaaProcessor.Instance.SetCurrentTasker();
-        
-        if ("adb".Equals(MaaProcessor.Config.AdbDevice.AdbPath) &&
-            DataSet.TryGetData<JObject>("AdbDevice", out var jObject))
+
+        if (Data.IsAdb() && "adb".Equals(MaaProcessor.Config.AdbDevice.AdbPath) && DataSet.TryGetData<JObject>("AdbDevice", out var jObject))
         {
             var settings = new JsonSerializerSettings();
             settings.Converters.Add(new AdbInputMethodsConverter());
@@ -117,7 +133,10 @@ public partial class MainWindow
             var device = jObject?.ToObject<AdbDeviceInfo>(JsonSerializer.Create(settings));
             if (device != null)
             {
-                deviceComboBox.ItemsSource = new List<AdbDeviceInfo> { device };
+                deviceComboBox.ItemsSource = new List<AdbDeviceInfo>
+                {
+                    device
+                };
                 deviceComboBox.SelectedIndex = 0;
                 MaaProcessor.Config.IsConnected = true;
             }
@@ -125,7 +144,10 @@ public partial class MainWindow
         else AutoDetectDevice();
     }
 
-    public void AddSettingOption(Panel? panel, string titleKey, IEnumerable<string> options, string datatype,
+    public void AddSettingOption(Panel? panel,
+        string titleKey,
+        IEnumerable<string> options,
+        string datatype,
         int defaultValue = 0)
     {
         var comboBox = new ComboBox
@@ -164,7 +186,11 @@ public partial class MainWindow
             Margin = new Thickness(5)
         };
 
-        comboBox.ItemsSource = new List<string> { "简体中文", "English" };
+        comboBox.ItemsSource = new List<string>
+        {
+            "简体中文",
+            "English"
+        };
         var binding = new Binding("Idle")
         {
             Source = Data,
@@ -186,7 +212,10 @@ public partial class MainWindow
         panel.Children.Add(comboBox);
     }
 
-    public void AddBindSettingOption(Panel? panel, string titleKey, IEnumerable<string> options, string datatype,
+    public void AddBindSettingOption(Panel? panel,
+        string titleKey,
+        IEnumerable<string> options,
+        string datatype,
         int defaultValue = 0)
 
     {
@@ -228,7 +257,7 @@ public partial class MainWindow
             Growl.Info(string.Format(LocExtension.GetLocalizedValue<string>("WindowSelectionMessage"),
                 window.Name));
             MaaProcessor.Config.DesktopWindow.HWnd = window.Handle;
-            
+
         }
         else if (deviceComboBox.SelectedItem is AdbDeviceInfo device)
         {
@@ -262,7 +291,10 @@ public partial class MainWindow
         var dialog = new AdbEditorDialog(deviceInfo);
         if (dialog.ShowDialog().IsTrue())
         {
-            deviceComboBox.ItemsSource = new List<AdbDeviceInfo> { dialog.Output };
+            deviceComboBox.ItemsSource = new List<AdbDeviceInfo>
+            {
+                dialog.Output
+            };
             deviceComboBox.SelectedIndex = 0;
             MaaProcessor.Config.IsConnected = true;
         }
@@ -272,11 +304,11 @@ public partial class MainWindow
     {
         try
         {
-            Growl.Info((Data?.IsAdb).IsTrue()
+            Growl.Info((Data?.IsAdb()).IsTrue()
                 ? LocExtension.GetLocalizedValue<string>("EmulatorDetectionStarted")
                 : LocExtension.GetLocalizedValue<string>("WindowDetectionStarted"));
             MaaProcessor.Config.IsConnected = false;
-            if ((Data?.IsAdb).IsTrue())
+            if ((Data?.IsAdb()).IsTrue())
             {
                 var devices = await _maaToolkit.AdbDevice.FindAsync();
                 deviceComboBox.ItemsSource = devices;
@@ -295,7 +327,7 @@ public partial class MainWindow
 
             if (!MaaProcessor.Config.IsConnected)
             {
-                Growl.Info((Data?.IsAdb).IsTrue()
+                Growl.Info((Data?.IsAdb()).IsTrue()
                     ? LocExtension.GetLocalizedValue<string>("NoEmulatorFound")
                     : LocExtension.GetLocalizedValue<string>("NoWindowFound"));
             }
@@ -303,7 +335,7 @@ public partial class MainWindow
         catch (Exception ex)
         {
             Growls.WarningGlobal(string.Format(LocExtension.GetLocalizedValue<string>("TaskStackError"),
-                (Data?.IsAdb).IsTrue() ? "Simulator".GetLocalizationString() : "Window".GetLocalizationString(),
+                (Data?.IsAdb()).IsTrue() ? "Simulator".GetLocalizationString() : "Window".GetLocalizationString(),
                 ex.Message));
             MaaProcessor.Config.IsConnected = false;
             LoggerService.LogError(ex);
@@ -319,7 +351,7 @@ public partial class MainWindow
 
     private void ConfigureMaaProcessorForADB()
     {
-        if ((Data?.IsAdb).IsTrue())
+        if ((Data?.IsAdb()).IsTrue())
         {
             var adbInputType = ConfigureAdbInputTypes();
             var adbScreenCapType = ConfigureAdbScreenCapTypes();
@@ -334,7 +366,7 @@ public partial class MainWindow
 
     public string ScreenshotType()
     {
-        if ((Data?.IsAdb).IsTrue())
+        if ((Data?.IsAdb()).IsTrue())
             return ConfigureAdbScreenCapTypes().ToString();
         return ConfigureWin32ScreenCapTypes().ToString();
     }
@@ -369,7 +401,7 @@ public partial class MainWindow
 
     private void ConfigureMaaProcessorForWin32()
     {
-        if (!(Data?.IsAdb).IsTrue())
+        if (!(Data?.IsAdb()).IsTrue())
         {
             var win32InputType = ConfigureWin32InputTypes();
             var winScreenCapType = ConfigureWin32ScreenCapTypes();
@@ -387,7 +419,7 @@ public partial class MainWindow
     private Win32ScreencapMethod ConfigureWin32ScreenCapTypes()
     {
         return DataSet.GetData("Win32ControlScreenCapType", 0) switch
-        { 
+        {
             0 => Win32ScreencapMethod.FramePool,
             1 => Win32ScreencapMethod.GDI,
             2 => Win32ScreencapMethod.DXGI_DesktopDup,
@@ -473,13 +505,13 @@ public partial class MainWindow
         if (colorExtractionDialog.ShowDialog() == true)
         {
             AppendLog(new Attribute("upper", colorExtractionDialog.OutputUpper));
-                AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
+            AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
             AppendLog(new Attribute("recommended roi", colorExtractionDialog.OutputRoi));
             switch (colorExtractionDialog.SelectType.SelectedIndex)
             {
-                case 0:AppendLog(new Attribute("method", 4));break;
-                case 1:AppendLog(new Attribute("method", 40));break;
-                case 2:AppendLog(new Attribute("method", 6));break;
+                case 0: AppendLog(new Attribute("method", 4)); break;
+                case 1: AppendLog(new Attribute("method", 40)); break;
+                case 2: AppendLog(new Attribute("method", 6)); break;
             }
         }
     }
@@ -503,5 +535,10 @@ public partial class MainWindow
 
     private void Copy(object sender, RoutedEventArgs e)
     {
+    }
+    private void sc(object sender, SelectionChangedEventArgs e)
+    {
+        Console.WriteLine(TabControl.SelectedIndex);
+        Console.WriteLine(new StackTrace(true));
     }
 }

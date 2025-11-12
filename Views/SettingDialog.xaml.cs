@@ -19,7 +19,7 @@ public partial class SettingDialog
 
     private void Init()
     {
-        if ((MainWindow.Data?.IsAdb).IsTrue())
+        if ((MainWindow.Data?.IsAdb()).IsTrue())
         {
             MainWindow.Instance?.AddSettingOption(settingPanel, "CaptureModeOption",
                 [

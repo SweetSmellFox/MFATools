@@ -61,7 +61,7 @@ public class MaaProcessor
         if (!Config.IsConnected)
         {
             Growls.Warning("Warning_CannotConnect".GetLocalizationString()
-                .FormatWith((MainWindow.Data?.IsAdb).IsTrue()
+                .FormatWith((MainWindow.Data?.IsAdb()).IsTrue()
                     ? "Simulator".GetLocalizationString()
                     : "Window".GetLocalizationString()));
             return;
@@ -83,7 +83,7 @@ public class MaaProcessor
 
         TaskManager.RunTaskAsync(async () =>
         {
-            MainWindow.Data?.AddLogByKey("ConnectingTo", null, (MainWindow.Data?.IsAdb).IsTrue()
+            MainWindow.Data?.AddLogByKey("ConnectingTo", null, (MainWindow.Data?.IsAdb()).IsTrue()
                 ? "Simulator"
                 : "Window");
             var instance = await Task.Run(GetCurrentTasker, token);
@@ -329,6 +329,7 @@ public class MaaProcessor
 
     private MaaTasker? InitializeMaaTasker()
     {
+        MainWindow.Instance?.ConnectToMAA();
         AutoInitDictionary.Clear();
 
         LoggerService.LogInfo("LoadingResources".GetLocalizationString());
@@ -354,7 +355,7 @@ public class MaaProcessor
         {
             HandleInitializationError(e,
                 "ConnectingSimulatorOrWindow".GetLocalizationString()
-                    .FormatWith((MainWindow.Data?.IsAdb).IsTrue()
+                    .FormatWith((MainWindow.Data?.IsAdb()).IsTrue()
                         ? "Simulator".GetLocalizationString()
                         : "Window".GetLocalizationString()), true,
                 "InitControllerFailed".GetLocalizationString());
@@ -385,7 +386,7 @@ public class MaaProcessor
 
     private MaaController InitializeController()
     {
-        return (MainWindow.Data?.IsAdb).IsTrue()
+        return (MainWindow.Data?.IsAdb()).IsTrue()
             ? new MaaAdbController(
                 Config.AdbDevice.AdbPath,
                 Config.AdbDevice.AdbSerial,

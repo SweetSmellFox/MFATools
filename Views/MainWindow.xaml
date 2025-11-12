@@ -79,11 +79,11 @@
                 </Grid.RowDefinitions>
                 <hc:SimpleStackPanel Orientation="Horizontal" Margin="15,2,10,0" Height="30">
                     
-                    <TabControl TabStripPlacement="Top" Background="Transparent"
-                                SelectionChanged="TabControl_OnSelectionChanged" IsEnabled="{Binding Idle}"
+                    <TabControl TabStripPlacement="Top" Background="Transparent" SelectedIndex="{Binding ControllerType}"
+                                IsEnabled="{Binding Idle}" SelectionChanged="sc"
                                 BorderThickness="0" x:Name="TabControl"
                                 Style="{StaticResource TabControlCapsuleSolid}">
-                        <TabItem Header="{lex:Loc TabADB}" x:Name="adbTab"></TabItem>
+                        <TabItem Header="{lex:Loc TabADB}" x:Name="adbTab" ></TabItem>
                         <TabItem Header="{lex:Loc TabWin32}" x:Name="win32Tab"></TabItem>
                     </TabControl>
                     

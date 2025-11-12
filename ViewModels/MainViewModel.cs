@@ -5,17 +5,20 @@ using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using HandyControl.Collections;
+using MFATools.Data;
 using MFATools.Utils;
 using MFATools.Views;
 
 
 namespace MFATools.ViewModels;
 
-public class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject
 {
     public ObservableCollection<LogItemViewModel> LogItemViewModels { get; } = new();
 
-    public void AddLog(string content, Brush? color = null, string weight = "Regular",
+    public void AddLog(string content,
+        Brush? color = null,
+        string weight = "Regular",
         bool showTime = true)
     {
         if (color == null)
@@ -43,7 +46,13 @@ public class MainViewModel : ObservableObject
             });
         });
     }
+    [ObservableProperty] private int _controllerType = DataSet.GetData("ControllerType", 0);
 
+    partial void OnControllerTypeChanged(int value)
+    {
+        DataSet.SetData("ControllerType", value);
+    }
+    
     public ManualObservableCollection<TaskItemViewModel> Items { get; set; } =
         new();
 
@@ -69,18 +78,15 @@ public class MainViewModel : ObservableObject
 
     private Brush _windowTopMostButtonForeground =
         (Brush)Application.Current.FindResource("MainBackgroundBrush");
-    
+
     public Brush WindowTopMostButtonForeground
     {
         get => _windowTopMostButtonForeground;
         set => SetProperty(ref _windowTopMostButtonForeground, value);
     }
-    
-    private bool _isAdb = true;
 
-    public bool IsAdb
+    public bool IsAdb()
     {
-        get => _isAdb;
-        set => SetProperty(ref _isAdb, value);
+        return ControllerType == 0;
     }
 }
