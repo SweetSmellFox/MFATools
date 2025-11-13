@@ -504,4 +504,7 @@
     <data name="SaveColor" xml:space="preserve">
         <value>保存颜色</value>
     </data>
+    <data name="RelativePath" xml:space="preserve">
+        <value>相对路径</value>
+    </data>
 </root>

@@ -476,4 +476,7 @@
     <data name="SaveColor" xml:space="preserve">
         <value>Save Color</value>
     </data>
+    <data name="RelativePath" xml:space="preserve">
+        <value>Relative path</value>
+    </data>
 </root>

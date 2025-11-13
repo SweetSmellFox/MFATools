@@ -1,7 +1,9 @@
-﻿using System;
+﻿using MFATools.Data;
+using System;
 using System.Windows;
 using System.Windows.Media;
 using MFATools.Utils;
+using System.Windows.Controls;
 
 namespace MFATools.Views;
 
@@ -43,7 +45,7 @@ public partial class SettingDialog
                 "Win32ControlInputType");
         }
         MainWindow.Instance?.AddLanguageOption(settingPanel);
-
+        RelativePathBox.Text = RelativePath;
         // 初始化线条样式设置
         InitializeLineStyleSettings();
     }
@@ -102,5 +104,15 @@ public partial class SettingDialog
     private void Cancel(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    public static string RelativePath { get; set; } = DataSet.GetData("RelativePath", string.Empty);
+    private void RelativePathBox_OnTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (RelativePath != RelativePathBox.Text)
+        {
+            RelativePath = RelativePathBox.Text;
+            DataSet.SetData("RelativePath", RelativePath);
+        }
     }
 }

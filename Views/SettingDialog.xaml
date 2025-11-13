@@ -10,9 +10,9 @@
            Icon="../logo.ico"
            Title="{lex:Loc TooltipSettings}"
            Width="350"
-           Height="720"
+           Height="780"
            MinWidth="350"
-           MinHeight="720"
+           MinHeight="780"
            ResizeMode="CanResize"
            Topmost="True"
            WindowStartupLocation="CenterScreen"
@@ -48,9 +48,10 @@
                                             Tag="LineColor" 
                             />
                         </StackPanel>
-                   
+                   <TextBox Style="{DynamicResource TextBoxExtend}"   Margin="5" x:Name="RelativePathBox" TextChanged="RelativePathBox_OnTextChanged" hc:TitleElement.TitlePlacement="Top" hc:TitleElement.Title="{lex:Loc RelativePath}"></TextBox>
                 </hc:SimpleStackPanel>
             </ScrollViewer>
+            
             <Button Grid.Row="1"  HorizontalAlignment="Stretch"
                     BorderThickness="0"
                     Content="{lex:Loc ButtonSave}"
