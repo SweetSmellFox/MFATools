@@ -470,4 +470,10 @@
     <data name="Restore" xml:space="preserve">
         <value>Restore</value>
     </data>
+    <data name="SaveRoi" xml:space="preserve">
+        <value>Save Roi</value>
+    </data>
+    <data name="SaveColor" xml:space="preserve">
+        <value>Save Color</value>
+    </data>
 </root>

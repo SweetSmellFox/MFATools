@@ -80,7 +80,7 @@
                 <hc:SimpleStackPanel Orientation="Horizontal" Margin="15,2,10,0" Height="30">
                     
                     <TabControl TabStripPlacement="Top" Background="Transparent" SelectedIndex="{Binding ControllerType}"
-                                IsEnabled="{Binding Idle}" SelectionChanged="sc"
+                                IsEnabled="{Binding Idle}" 
                                 BorderThickness="0" x:Name="TabControl"
                                 Style="{StaticResource TabControlCapsuleSolid}">
                         <TabItem Header="{lex:Loc TabADB}" x:Name="adbTab" ></TabItem>

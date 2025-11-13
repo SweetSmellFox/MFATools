@@ -376,28 +376,26 @@ public partial class RecognitionTextDialog
         // 像素坐标边界检查
         x = Math.Clamp(x, 0, (int)_originWidth - 1);
         y = Math.Clamp(y, 0, (int)_originHeight - 1);
-        width = Math.Clamp(width, 1, (int)_originWidth - x);
-        height = Math.Clamp(height, 1, (int)_originHeight - y);
+        width = Math.Clamp(width, 1, (int)_originWidth - x) + 1;
+        height = Math.Clamp(height, 1, (int)_originHeight - y) + 1;
 
         // 清除之前的矩形
         if (_selectionRectangle != null)
             SelectionCanvas.Children.Remove(_selectionRectangle);
-
-        // 转换像素坐标到屏幕坐标（乘以缩放比例）
-        double screenX = x * _scale;
-        double screenY = y * _scale;
-        double screenWidth = width * _scale;
-        double screenHeight = height * _scale;
 
         // 创建矩形（保持样式一致）
         _selectionRectangle = new System.Windows.Shapes.Rectangle
         {
             Stroke = SettingDialog.DefaultLineColor,
             StrokeThickness = SettingDialog.DefaultLineThickness,
-            StrokeDashArray = { 2, 2 },
-            Width = screenWidth,
-            Height = screenHeight,
-            RenderTransform = new TranslateTransform(screenX, screenY)
+            StrokeDashArray =
+            {
+                2,
+                2
+            },
+            Width = width,
+            Height = height,
+            RenderTransform = new TranslateTransform(x - 1, y - 1)
         };
         SelectionCanvas.Children.Add(_selectionRectangle);
     }

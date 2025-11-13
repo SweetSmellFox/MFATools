@@ -6,11 +6,13 @@
            xmlns:local="clr-namespace:MFATools.Views"
            xmlns:hc="https://handyorg.github.io/handycontrol"
            xmlns:lex="http://wpflocalizeextension.codeplex.com"
+           xmlns:calcBinding="clr-namespace:CalcBinding;assembly=CalcBinding"
+           xmlns:converters="clr-namespace:MFATools.Utils.Converters"
            mc:Ignorable="d"
            Icon="../logo.ico"
            Title="{lex:Loc RoiEditor}"
-           Width="350"
            Height="285"
+           Width="500"
            MinWidth="350"
            MinHeight="325"
            ResizeMode="CanResize"
@@ -19,14 +21,28 @@
            WindowStyle="SingleBorderWindow"
            NonClientAreaBackground="{DynamicResource MainContentBackgroundBrush}"
            Background="{DynamicResource SecundaryBackgroundColor}">
+    <hc:Window.Resources>
+        <converters:BoolToGridLengthConverter x:Key="BoolToGridLengthConverter" />
+    </hc:Window.Resources>
     <Grid>
-        <StackPanel Orientation="Vertical">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"></ColumnDefinition>
+            <ColumnDefinition
+                Width="{Binding HasColor, 
+                                              RelativeSource={RelativeSource AncestorType=hc:Window}, 
+                                              Converter={StaticResource BoolToGridLengthConverter}}" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Vertical">
             <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True" x:Name="xText"
                         Margin="15 15 15 10"
                         Text="{Binding X, RelativeSource={RelativeSource AncestorType=hc:Window}}"
                         hc:InfoElement.TitlePlacement="Left"
                         hc:InfoElement.Title="X" />
- 
+
             <hc:TextBox HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True" x:Name="yText"
                         Text="{Binding Y, RelativeSource={RelativeSource AncestorType=hc:Window}}"
                         Margin="15 10 15 10"
@@ -44,51 +60,206 @@
                         hc:InfoElement.TitlePlacement="Left"
                         hc:InfoElement.Title="H" />
             <Button HorizontalAlignment="Stretch" Content="{lex:Loc ReadFromClipboard}" Click="Paste"
-                    Margin="15 10 15 10"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 10 0 10">
+                    Margin="15 10 15 10" />
 
-                <Button HorizontalAlignment="Stretch"
-                        BorderThickness="0"
-                        Content="{lex:Loc ButtonSave}"
-                        Foreground="White" Click="Save"
-                        FontSize="11" Width="150"
-                        VerticalContentAlignment="Center"
-                        Margin="5,0,5,0">
+        </StackPanel>
+        <StackPanel Grid.Row="0" Orientation="Vertical" Grid.Column="1"
+                   >
+            <!-- RGB Upper（R/G/B通道） -->
+            <Grid Margin="15 10 15 10"  Visibility="{calcBinding:Binding 'ColorType == 0', RelativeSource={RelativeSource AncestorType=hc:Window}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" TextAlignment="Center" Margin="5">RGB Upper:</TextBlock>
+                <!-- R通道（已绑定UR） -->
+                <hc:NumericUpDown Grid.Column="1" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding UR, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+                <!-- G通道（绑定UG） -->
+                <hc:NumericUpDown Grid.Column="2" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding UG, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+                <!-- B通道（绑定UB） -->
+                <hc:NumericUpDown Grid.Column="3" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding UB, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+            </Grid>
 
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="Background" Value="{DynamicResource PrimaryBlueColor}" />
-                            <Setter Property="Cursor" Value="Arrow" />
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Cursor" Value="Hand" />
-                                    <Setter Property="Background"
-                                            Value="{DynamicResource PrimaryLightBlueColor}" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
+            <!-- RGB Lower（R/G/B通道） -->
+            <Grid Margin="15 10 15 10" Visibility="{calcBinding:Binding 'ColorType == 0', RelativeSource={RelativeSource AncestorType=hc:Window}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" TextAlignment="Center" Margin="5">RGB Lower:</TextBlock>
+                <!-- R通道（绑定LR） -->
+                <hc:NumericUpDown Grid.Column="1" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding LR, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+                <!-- G通道（绑定LG） -->
+                <hc:NumericUpDown Grid.Column="2" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding LG, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+                <!-- B通道（绑定LB） -->
+                <hc:NumericUpDown Grid.Column="3" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding LB, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+            </Grid>
 
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Height="30"
-                                    CornerRadius="4"
-                                    Background="{TemplateBinding Background}">
-                                <ContentPresenter VerticalAlignment="Center"
-                                                  HorizontalAlignment="Center" />
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button Width="150" Click="Cancel"
-                        Content="{lex:Loc ButtonCancel}"
-                        Foreground="{DynamicResource BlackColor}"
-                        FontSize="11" HorizontalAlignment="Stretch"
-                        VerticalContentAlignment="Center"
-                        Height="30"
-                        Margin="15,0,5,0">
-                </Button>
-            </StackPanel>
+            <!-- HSV Upper（H/S/V通道） -->
+            <Grid Margin="15 10 15 10" Visibility="{calcBinding:Binding 'ColorType == 1', RelativeSource={RelativeSource AncestorType=hc:Window}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" TextAlignment="Center" Margin="5">HSV Upper:</TextBlock>
+                <!-- H通道（绑定UH） -->
+                <hc:NumericUpDown Grid.Column="1" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding UH, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="180" DecimalPlaces="0" Increment="1" />
+                <!-- S通道（绑定US） -->
+                <hc:NumericUpDown Grid.Column="2" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding US, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+                <!-- V通道（绑定UV） -->
+                <hc:NumericUpDown Grid.Column="3" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding UV, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+            </Grid>
+
+            <!-- HSV Lower（H/S/V通道） -->
+            <Grid Margin="15 10 15 10" Visibility="{calcBinding:Binding 'ColorType == 1', RelativeSource={RelativeSource AncestorType=hc:Window}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" TextAlignment="Center" Margin="5">HSV Lower:</TextBlock>
+                <!-- H通道（绑定LH） -->
+                <hc:NumericUpDown Grid.Column="1" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding LH, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="180" DecimalPlaces="0" Increment="1" />
+                <!-- S通道（绑定LS） -->
+                <hc:NumericUpDown Grid.Column="2" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding LS, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+                <!-- V通道（绑定LV） -->
+                <hc:NumericUpDown Grid.Column="3" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding LV, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+            </Grid>
+
+            <!-- Gray Upper（灰度值） -->
+            <Grid Margin="15 10 15 10" Visibility="{calcBinding:Binding 'ColorType == 2', RelativeSource={RelativeSource AncestorType=hc:Window}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" TextAlignment="Center" Margin="5">Gray Upper:</TextBlock>
+                <!-- 绑定UGray -->
+                <hc:NumericUpDown Grid.Column="1" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding UGray, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+            </Grid>
+
+            <!-- Gray Lower（灰度值） -->
+            <Grid Margin="15 10 15 10" Visibility="{calcBinding:Binding 'ColorType == 2', RelativeSource={RelativeSource AncestorType=hc:Window}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" TextAlignment="Center" Margin="5">Gray Lower:</TextBlock>
+                <!-- 绑定LGray -->
+                <hc:NumericUpDown Grid.Column="1" HorizontalAlignment="Stretch" hc:InfoElement.ShowClearButton="True"
+                                  Value="{Binding LGray, RelativeSource={RelativeSource AncestorType=hc:Window}}"
+                                  Minimum="0" Maximum="255" DecimalPlaces="0" Increment="1" />
+            </Grid>
+        </StackPanel>
+        <StackPanel Grid.ColumnSpan="2" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                    Margin="0 10 0 10">
+
+            <Button HorizontalAlignment="Stretch"
+                    BorderThickness="0"
+                    Content="{lex:Loc SaveRoi}"
+                    Foreground="White" Click="Save"
+                    FontSize="11" Width="150"
+                    VerticalContentAlignment="Center"
+                    Margin="5,0,5,0">
+
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="{DynamicResource PrimaryBlueColor}" />
+                        <Setter Property="Cursor" Value="Arrow" />
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="Background"
+                                        Value="{DynamicResource PrimaryLightBlueColor}" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Height="30"
+                                CornerRadius="4"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center"
+                                              HorizontalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button HorizontalAlignment="Stretch"
+                    BorderThickness="0"
+                    Content="{lex:Loc SaveColor}"
+                    Foreground="White" Click="SaveColor"
+                    FontSize="11" Width="150"
+                    VerticalContentAlignment="Center"
+                    Margin="5,0,5,0" Visibility="{calcBinding:Binding HasColor, RelativeSource={RelativeSource AncestorType=hc:Window}}">
+                
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="{DynamicResource PrimaryBlueColor}" />
+                        <Setter Property="Cursor" Value="Arrow" />
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="Background"
+                                        Value="{DynamicResource PrimaryLightBlueColor}" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Height="30"
+                                CornerRadius="4"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center"
+                                              HorizontalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button Width="150" Click="Cancel"
+                    Content="{lex:Loc ButtonCancel}"
+                    Foreground="{DynamicResource BlackColor}"
+                    FontSize="11" HorizontalAlignment="Stretch"
+                    VerticalContentAlignment="Center"
+                    Height="30"
+                    Margin="15,0,5,0">
+            </Button>
         </StackPanel>
     </Grid>
 </hc:Window>

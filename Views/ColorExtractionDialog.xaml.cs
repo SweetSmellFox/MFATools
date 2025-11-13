@@ -229,7 +229,7 @@ public partial class ColorExtractionDialog
         {
             // 开始绘制矩形
             var position = e.GetPosition(image);
-            var canvasPosition = e.GetPosition(image);
+            var canvasPosition = e.GetPosition(SelectionCanvas);
             if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 && canvasPosition is { X: > -5, Y: > -5 })
             {
                 position.X = Math.Clamp(position.X, 0, image.ActualWidth);
@@ -610,14 +610,17 @@ public partial class ColorExtractionDialog
     // 绘制矩形（统一缩放处理）
     public void DrawRectangle(int x, int y, int width, int height)
     {
+        // 像素坐标边界检查
         x = Math.Clamp(x, 0, (int)_originWidth - 1);
         y = Math.Clamp(y, 0, (int)_originHeight - 1);
-        width = Math.Clamp(width, 1, (int)_originWidth - x);
-        height = Math.Clamp(height, 1, (int)_originHeight - y);
+        width = Math.Clamp(width, 1, (int)_originWidth - x) + 1;
+        height = Math.Clamp(height, 1, (int)_originHeight - y) + 1;
 
+        // 清除之前的矩形
         if (_selectionRectangle != null)
             SelectionCanvas.Children.Remove(_selectionRectangle);
 
+        // 创建矩形（保持样式一致）
         _selectionRectangle = new System.Windows.Shapes.Rectangle
         {
             Stroke = SettingDialog.DefaultLineColor,
@@ -627,9 +630,9 @@ public partial class ColorExtractionDialog
                 2,
                 2
             },
-            Width = width * _scale,
-            Height = height * _scale,
-            RenderTransform = new TranslateTransform(x * _scale, y * _scale)
+            Width = width,
+            Height = height,
+            RenderTransform = new TranslateTransform(x - 1, y - 1)
         };
         SelectionCanvas.Children.Add(_selectionRectangle);
     }
@@ -638,17 +641,133 @@ public partial class ColorExtractionDialog
     private void Edit(object sender, RoutedEventArgs e)
     {
         var initialRect = _currentRect ?? (0, 0, 1, 1);
-        var dialog = new RoiEditorDialog(initialRect);
+        var dialog = new RoiEditorDialog(initialRect)
+        {
+            HasColor = true,
+            ColorType = SelectType.SelectedIndex
+        };
+        switch (SelectType.SelectedIndex)
+        {
+            case 0: // RGB
+                if (_tempColorRange != null)
+                {
+                    // 赋值 RGB Upper 通道（R/G/B）
+                    dialog.UR = _tempColorRange.Value.Upper.Count > 0 ? _tempColorRange.Value.Upper[0] : 0; // R
+                    dialog.UG = _tempColorRange.Value.Upper.Count > 1 ? _tempColorRange.Value.Upper[1] : 0; // G
+                    dialog.UB = _tempColorRange.Value.Upper.Count > 2 ? _tempColorRange.Value.Upper[2] : 0; // B
+
+                    // 赋值 RGB Lower 通道（R/G/B）
+                    dialog.LR = _tempColorRange.Value.Lower.Count > 0 ? _tempColorRange.Value.Lower[0] : 0; // R
+                    dialog.LG = _tempColorRange.Value.Lower.Count > 1 ? _tempColorRange.Value.Lower[1] : 0; // G
+                    dialog.LB = _tempColorRange.Value.Lower.Count > 2 ? _tempColorRange.Value.Lower[2] : 0; // B
+                }
+                break;
+
+            case 1: // HSV
+                if (_tempColorRange != null)
+                {
+                    // 赋值 HSV Upper 通道（H/S/V）
+                    dialog.UH = _tempColorRange.Value.Upper.Count > 0 ? _tempColorRange.Value.Upper[0] : 0; // H（色相）
+                    dialog.US = _tempColorRange.Value.Upper.Count > 1 ? _tempColorRange.Value.Upper[1] : 0; // S（饱和度）
+                    dialog.UV = _tempColorRange.Value.Upper.Count > 2 ? _tempColorRange.Value.Upper[2] : 0; // V（明度）
+
+                    // 赋值 HSV Lower 通道（H/S/V）
+                    dialog.LH = _tempColorRange.Value.Lower.Count > 0 ? _tempColorRange.Value.Lower[0] : 0; // H
+                    dialog.LS = _tempColorRange.Value.Lower.Count > 1 ? _tempColorRange.Value.Lower[1] : 0; // S
+                    dialog.LV = _tempColorRange.Value.Lower.Count > 2 ? _tempColorRange.Value.Lower[2] : 0; // V
+                }
+                break;
+
+            case 2: // 灰度
+                if (_tempColorRange != null)
+                {
+                    // 灰度只有一个通道，直接赋值 Upper 和 Lower
+                    dialog.UGray = _tempColorRange.Value.Upper.Count > 0 ? _tempColorRange.Value.Upper[0] : 0; //  Upper Gray
+                    dialog.LGray = _tempColorRange.Value.Lower.Count > 0 ? _tempColorRange.Value.Lower[0] : 0; //  Lower Gray
+                }
+                break;
+        }
         if (dialog.ShowDialog().IsTrue())
         {
-            _currentRect = (dialog.X.ToNumber(), dialog.Y.ToNumber(), dialog.W.ToNumber(), dialog.H.ToNumber());
-            // 重新计算颜色范围
-            if (_originBitmap != null && _currentRect.HasValue)
+            if (dialog.EditColor)
             {
-                var (x, y, w, h) = _currentRect.Value;
-                _tempColorRange = CalculateColorRange(x, y, w, h);
+                switch (SelectType.SelectedIndex)
+                {
+                    case 0: // RGB
+                        // 新建 RGB 对应的 Lower 和 Upper 列表（3个通道：R/G/B）
+                        var rgbLower = new List<int>
+                        {
+                            (int)dialog.LR, // 转换为 int（原属性是 double）
+                            (int)dialog.LG,
+                            (int)dialog.LB
+                        };
+                        var rgbUpper = new List<int>
+                        {
+                            (int)dialog.UR,
+                            (int)dialog.UG,
+                            (int)dialog.UB
+                        };
+                        // 赋值给 _tempColorRange（直接创建新元组）
+                        _tempColorRange = (rgbLower, rgbUpper);
+                        break;
+
+                    case 1: // HSV
+                        // 新建 HSV 对应的 Lower 和 Upper 列表（3个通道：H/S/V）
+                        var hsvLower = new List<int>
+                        {
+                            (int)dialog.LH,
+                            (int)dialog.LS,
+                            (int)dialog.LV
+                        };
+                        var hsvUpper = new List<int>
+                        {
+                            (int)dialog.UH,
+                            (int)dialog.US,
+                            (int)dialog.UV
+                        };
+                        _tempColorRange = (hsvLower, hsvUpper);
+                        break;
+
+                    case 2: // 灰度
+                        // 新建灰度对应的 Lower 和 Upper 列表（1个通道）
+                        var grayLower = new List<int>
+                        {
+                            (int)dialog.LGray
+                        };
+                        var grayUpper = new List<int>
+                        {
+                            (int)dialog.UGray
+                        };
+                        _tempColorRange = (grayLower, grayUpper);
+                        break;
+                }
+                string colorType = SelectType.SelectedIndex switch
+                {
+                    0 => "RGB",
+                    1 => "HSV",
+                    2 => "Gray",
+                    _ => ""
+                };
+                var positionText = _currentRect != null ? $"[ {_currentRect.Value.X}, {_currentRect.Value.Y}, {_currentRect.Value.Width}, {_currentRect.Value.Height} ]{Environment.NewLine}" : "";
+                string rangeText = $"{colorType}:{Environment.NewLine}";
+                rangeText += $"Lower: {string.Join(", ", _tempColorRange.Value.Lower)}{Environment.NewLine}";
+                rangeText += $"Upper: {string.Join(", ", _tempColorRange.Value.Upper)}";
+
+                // 合并显示文本
+                MousePositionText.Text = $"{positionText}{rangeText}";
             }
-            RefreshDisplay();
+            else
+            {
+                _currentRect = (dialog.X.ToNumber(), dialog.Y.ToNumber(), dialog.W.ToNumber(), dialog.H.ToNumber());
+                // 重新计算颜色范围
+                if (_originBitmap != null && _currentRect.HasValue)
+                {
+                    var (x, y, w, h) = _currentRect.Value;
+                    _tempColorRange = CalculateColorRange(x, y, w, h);
+                }
+                RefreshDisplay();
+            }
+
         }
     }
 
@@ -665,7 +784,7 @@ public partial class ColorExtractionDialog
         // 切换预览模式
         _isPreviewMode = !_isPreviewMode;
 
-        if (_isPreviewMode)
+        if (_isPreviewMode && (_tempColorRange != null || (OutputLower != null && OutputUpper != null)))
         {
             // 进入预览模式：应用颜色过滤
             toggleButton.Content = "Restore".GetLocalizationString();
@@ -811,5 +930,22 @@ public partial class ColorExtractionDialog
     private void SelectType_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _tempColorRange = null;
+        string colorType = SelectType.SelectedIndex switch
+        {
+            0 => "RGB",
+            1 => "HSV",
+            2 => "Gray",
+            _ => ""
+        };
+        var positionText = _currentRect != null ? $"[ {_currentRect.Value.X}, {_currentRect.Value.Y}, {_currentRect.Value.Width}, {_currentRect.Value.Height} ]{Environment.NewLine}" : "";
+        string rangeText = "";
+        if (_tempColorRange != null)
+        {
+            rangeText = $"{colorType}:{Environment.NewLine}";
+            rangeText += $"Lower: {string.Join(", ", _tempColorRange.Value.Lower)}{Environment.NewLine}";
+            rangeText += $"Upper: {string.Join(", ", _tempColorRange.Value.Upper)}";
+        }
+        // 合并显示文本
+        MousePositionText.Text = $"{positionText}{rangeText}";
     }
 }

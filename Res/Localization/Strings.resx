@@ -498,4 +498,10 @@
     <data name="Restore" xml:space="preserve">
         <value>还原</value>
     </data>
+    <data name="SaveRoi" xml:space="preserve">
+        <value>保存Roi</value>
+    </data>
+    <data name="SaveColor" xml:space="preserve">
+        <value>保存颜色</value>
+    </data>
 </root>

@@ -232,7 +232,7 @@ public partial class CropImageDialog
         {
             // 开始绘制矩形
             var position = e.GetPosition(image);
-            var canvasPosition = e.GetPosition(image);
+            var canvasPosition = e.GetPosition(SelectionCanvas);
             if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 && canvasPosition is { X: > -5, Y: > -5 })
             {
                 if (position.X < 0) position.X = 0;

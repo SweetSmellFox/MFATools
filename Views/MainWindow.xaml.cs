@@ -536,9 +536,4 @@ public partial class MainWindow
     private void Copy(object sender, RoutedEventArgs e)
     {
     }
-    private void sc(object sender, SelectionChangedEventArgs e)
-    {
-        Console.WriteLine(TabControl.SelectedIndex);
-        Console.WriteLine(new StackTrace(true));
-    }
 }

@@ -5,9 +5,12 @@
            xmlns:local="clr-namespace:MFATools.Views" 
            xmlns:controls="clr-namespace:MFATools.Controls"
            NonClientAreaBackground="{DynamicResource MainContentBackgroundBrush}" Icon="../logo.ico"
-           xmlns:lex="http://wpflocalizeextension.codeplex.com" Height="200" Width="680"
+           xmlns:lex="http://wpflocalizeextension.codeplex.com"
+           xmlns:converters="clr-namespace:MFATools.Utils.Converters"
+           Height="200" Width="680"
            WindowStartupLocation="CenterScreen"
            Title="{lex:Loc ColorPickerTitle}">
+
     <Border Background="{DynamicResource WhiteColor}"
             MouseDown="Canvas_MouseDown">
         <Grid>
