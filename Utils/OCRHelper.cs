@@ -69,7 +69,8 @@ public class OCRHelper
         {
             Growls.ErrorGlobal("识别失败！");
         }
-
+        MFAOCRRecognition.Output = null;
+        MFAOCRRecognition.Bitmap = null;
         Console.WriteLine($"识别结果: {result}");
         // TaskItemViewModel taskItemViewModel = new TaskItemViewModel
         // {
