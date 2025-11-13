@@ -195,8 +195,8 @@ public class AttributeTag : Tag
     {
         string attributeText = Attribute.ToString();
 
-        attributeText = attributeText.Replace("recommended roi", "roi");
-
+        attributeText = attributeText.Replace("recommended roi", "roi").Replace("origin roi", "roi");
+       
         Clipboard.SetDataObject(attributeText);
         Tip();
     }
