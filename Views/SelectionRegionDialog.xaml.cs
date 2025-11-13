@@ -22,15 +22,14 @@ namespace MFATools.Views;
 public partial class SelectionRegionDialog
 {
     // 原始图像（始终不变，用于恢复）
-    private Bitmap _originBitmap;
-    // 当前显示的图像（用于绘制矩形，每次刷新从_originBitmap复制）
-    private Bitmap _displayBitmap;
+    private Bitmap? _originBitmap;
     // 矩形绘制参数（像素坐标）
     private (int X, int Y, int Width, int Height)? _currentRect;
     private Point _startPoint; // 起始像素坐标
 
     // 输出的ROI坐标（像素级）
     private List<int>? _output { get; set; }
+
     public List<int>? Output
     {
         get => _output;
@@ -56,12 +55,13 @@ public partial class SelectionRegionDialog
             _originBitmap = MaaProcessor.Instance.GetBitmap();
             if (_originBitmap == null) return;
 
-            // 初始化显示图像（复制原始图像）
-            _displayBitmap = new Bitmap(_originBitmap);
-            var imageSource = MFAExtensions.BitmapToBitmapImage(_displayBitmap);
 
             // 回到UI线程更新
-            Dispatcher.Invoke(() => UpdateImage(imageSource));
+            Dispatcher.Invoke(() =>
+            {
+                UpdateImage();
+                RefreshDisplay();
+            });
         });
     }
 
@@ -69,37 +69,37 @@ public partial class SelectionRegionDialog
     {
         base.OnClosed(e);
         _originBitmap?.Dispose();
-        _displayBitmap?.Dispose();
     }
 
     // 更新图像显示（计算初始缩放，与统一逻辑一致）
-    public void UpdateImage(BitmapImage? imageSource)
+    public void UpdateImage()
     {
-        if (imageSource == null) return;
+        if (_originBitmap == null) return;
 
         LoadingCircle.Visibility = Visibility.Collapsed;
         ImageArea.Visibility = Visibility.Visible;
-        image.Source = imageSource;
+
         image.SnapsToDevicePixels = true;
         SnapsToDevicePixels = true;
 
-        _originWidth = imageSource.PixelWidth;
-        _originHeight = imageSource.PixelHeight;
+        // 更新原始尺寸
+        _originWidth = _originBitmap.Width;
+        _originHeight = _originBitmap.Height;
 
-        // 计算初始缩放（适应窗口最大尺寸）
+        // 重新计算缩放比例
         double maxWidth = Math.Min(1280, SystemParameters.PrimaryScreenWidth - 100);
         double maxHeight = Math.Min(720, SystemParameters.PrimaryScreenHeight - 200);
         double widthRatio = maxWidth / _originWidth;
         double heightRatio = maxHeight / _originHeight;
         _scale = Math.Min(widthRatio, heightRatio);
 
-        // 设置显示尺寸（基于缩放比例）
+        // 更新显示尺寸
         image.Width = _originWidth * _scale;
         image.Height = _originHeight * _scale;
 
-        // 窗口尺寸调整
+        // 窗口调整
         Width = image.Width + 40;
-        Height = image.Height + 120;
+        Height = image.Height + 160;
         RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
         CenterWindow();
     }
@@ -107,53 +107,68 @@ public partial class SelectionRegionDialog
     // 将屏幕坐标转换为实际像素坐标（与统一逻辑一致）
     private (int X, int Y) ScreenToPixel(Point screenPos)
     {
-        int x = (int)Math.Ceiling(screenPos.X);
-        int y = (int)Math.Ceiling(screenPos.Y);
-        // 边界限制
+        // 关键：屏幕坐标 ÷ 缩放比例 = 实际像素坐标
+        int x = (int)Math.Ceiling(screenPos.X / _scale); 
+        int y = (int)Math.Ceiling(screenPos.Y / _scale);
         x = Math.Clamp(x, 0, (int)_originWidth);
         y = Math.Clamp(y, 0, (int)_originHeight);
         return (x, y);
     }
 
-    // 刷新显示（恢复原始图像并绘制矩形，核心方法）
+    // 刷新显示（核心绘制逻辑：恢复原始图像+绘制矩形）
+    private WriteableBitmap? _displayWriteableBitmap;
+    // 刷新显示（支持预览模式）
     private void RefreshDisplay()
     {
         if (_originBitmap == null) return;
 
-        // 从原始图像复制（清除之前的矩形）
-        lock (_originBitmap)
+        // 首次初始化或尺寸变化时，创建/重置 WriteableBitmap（仅执行一次或尺寸变化时）
+        if (_displayWriteableBitmap == null
+            || _displayWriteableBitmap.PixelWidth != _originBitmap.Width
+            || _displayWriteableBitmap.PixelHeight != _originBitmap.Height)
         {
-            _displayBitmap?.Dispose();
-            _displayBitmap = new Bitmap(_originBitmap);
-        }
-        SelectionCanvas.Children.Clear();
-        _selectionRectangle = null;
-        // 如果有矩形，绘制到显示图像上
-        if (_currentRect.HasValue)
-        {
-            var rect = _currentRect.Value;
-            using (var g = Graphics.FromImage(_displayBitmap))
-            {
-                // 抗锯齿绘制（与统一逻辑一致）
-                g.SmoothingMode = SmoothingMode.None;
-                g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                // 绘制虚线矩形
-                using (var pen = new Pen(Color.FromArgb(SettingDialog.DefaultLineColor.Color.R,
-                                                       SettingDialog.DefaultLineColor.Color.G,
-                                                       SettingDialog.DefaultLineColor.Color.B),
-                                       SettingDialog.DefaultLineThickness))
-                {
-                    pen.DashStyle = DashStyle.Dash;
-                    pen.DashPattern = [2, 2];
-                    // 绘制时确保像素对齐
-                    g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
-                }
-            }
+            // 初始化 WriteableBitmap（与原始图像尺寸一致，格式用 Bgra32 兼容 WPF）
+            _displayWriteableBitmap = new WriteableBitmap(
+                _originBitmap.Width,
+                _originBitmap.Height,
+                96, 96,
+                PixelFormats.Bgra32,
+                null);
+
+            // 仅首次赋值一次 image.Source（后续不再修改 Source）
+            image.Source = _displayWriteableBitmap;
         }
 
-        // 更新UI显示
-        image.Source = MFAExtensions.BitmapToBitmapImage(_displayBitmap);
+        // 临时 Bitmap 用于绘制（避免直接修改原始图像）
+        using (var tempBitmap = new Bitmap(_originBitmap))
+        {
+            // 绘制矩形（如果需要）
+            if (_currentRect.HasValue)
+            {
+                var rect = _currentRect.Value;
+                using (var g = Graphics.FromImage(tempBitmap))
+                {
+                    g.SmoothingMode = SmoothingMode.None;
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    using (var pen = new Pen(
+                               Color.FromArgb(
+                                   SettingDialog.DefaultLineColor.Color.R,
+                                   SettingDialog.DefaultLineColor.Color.G,
+                                   SettingDialog.DefaultLineColor.Color.B),
+                               SettingDialog.DefaultLineThickness))
+                    {
+                        pen.DashStyle = DashStyle.Dash;
+                        pen.DashPattern = [2, 2];
+                        g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+                    }
+                }
+            }
+
+            // 将临时 Bitmap 的像素复制到 WriteableBitmap（核心优化：只更新像素，不换 Source）
+            tempBitmap.UpdateWriteableBitmap(_displayWriteableBitmap);
+        }
     }
 
     // 窗口居中（与统一逻辑一致）
@@ -229,17 +244,15 @@ public partial class SelectionRegionDialog
         {
             // 开始绘制矩形
             var position = e.GetPosition(image);
-            var canvasPosition = e.GetPosition(SelectionCanvas);
+            var canvasPosition = e.GetPosition(ImageArea);
             if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 && canvasPosition is { X: > -5, Y: > -5 })
             {
-                if (position.X < 0) position.X = 0;
-                if (position.Y < 0) position.Y = 0;
-                if (position.X > image.ActualWidth) position.X = image.ActualWidth;
-                if (position.Y > image.ActualHeight) position.Y = image.ActualHeight;
+                position.X = Math.Clamp(position.X, 0, image.ActualWidth);
+                position.Y = Math.Clamp(position.Y, 0, image.ActualHeight);
                 var (actualX, actualY) = ScreenToPixel(position);
                 _startPoint = new Point(actualX, actualY);
                 _currentRect = (actualX, actualY, 0, 0);
-                RefreshDisplay(); // 初始刷新（清空之前的矩形）
+                RefreshDisplay();
                 Mouse.Capture(image);
             }
         }
@@ -275,20 +288,19 @@ public partial class SelectionRegionDialog
         }
         else if (_currentRect.HasValue && e.LeftButton == MouseButtonState.Pressed)
         {
-            if (screenPos.X < 0) screenPos.X = 0;
-            if (screenPos.Y < 0) screenPos.Y = 0;
-            if (screenPos.X > image.ActualWidth) screenPos.X = image.ActualWidth;
-            if (screenPos.Y > image.ActualHeight) screenPos.Y = image.ActualHeight;
+            screenPos.X = Math.Clamp(screenPos.X, 0, image.ActualWidth);
+            screenPos.Y = Math.Clamp(screenPos.Y, 0, image.ActualHeight);
             var (actualX, actualY) = ScreenToPixel(screenPos);
+
+            // 计算矩形坐标
             double x = Math.Min(_startPoint.X, actualX);
             double y = Math.Min(_startPoint.Y, actualY);
-            // 确保最小尺寸
             var w = Math.Max(Math.Abs(_startPoint.X - actualX), 1);
             var h = Math.Max(Math.Abs(_startPoint.Y - actualY), 1);
-
             _currentRect = (Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(w), Convert.ToInt32(h));
-            DrawRectangle(Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(w), Convert.ToInt32(h));
 
+            // 绘制临时矩形
+            RefreshDisplay();
             // 更新矩形坐标文本
             MousePositionText.Text = $"[ {Convert.ToInt32(x)}, {Convert.ToInt32(y)}, {Convert.ToInt32(w)}, {Convert.ToInt32(h)} ]";
         }
@@ -318,41 +330,16 @@ public partial class SelectionRegionDialog
         width = Math.Clamp(width, 1, (int)_originWidth - x);
         height = Math.Clamp(height, 1, (int)_originHeight - y);
 
-        Output = new List<int> { x, y, width, height };
+        Output = new List<int>
+        {
+            x,
+            y,
+            width,
+            height
+        };
         IsRoi = SelectType.SelectedIndex == 0;
         DialogResult = true;
         Close();
-    }
-
-    // 绘制矩形（统一缩放与边界处理）
-    private System.Windows.Shapes.Rectangle? _selectionRectangle; // 画布上的选择矩形
-    public void DrawRectangle(int x, int y, int width, int height)
-    {
-        // 像素坐标边界检查
-        x = Math.Clamp(x, 0, (int)_originWidth - 1);
-        y = Math.Clamp(y, 0, (int)_originHeight - 1);
-        width = Math.Clamp(width, 1, (int)_originWidth - x) + 1;
-        height = Math.Clamp(height, 1, (int)_originHeight - y) + 1;
-
-        // 清除之前的矩形
-        if (_selectionRectangle != null)
-            SelectionCanvas.Children.Remove(_selectionRectangle);
-
-        // 创建矩形（保持样式一致）
-        _selectionRectangle = new System.Windows.Shapes.Rectangle
-        {
-            Stroke = SettingDialog.DefaultLineColor,
-            StrokeThickness = SettingDialog.DefaultLineThickness,
-            StrokeDashArray =
-            {
-                2,
-                2
-            },
-            Width = width,
-            Height = height,
-            RenderTransform = new TranslateTransform(x - 1, y - 1)
-        };
-        SelectionCanvas.Children.Add(_selectionRectangle);
     }
 
     // 编辑矩形（与统一逻辑一致）
@@ -381,11 +368,14 @@ public partial class SelectionRegionDialog
             try
             {
                 // 替换原始图像
+                _displayWriteableBitmap = null;
                 _originBitmap?.Dispose();
                 _originBitmap = new Bitmap(openFileDialog.FileName);
                 _currentRect = null;
+                UpdateImage();
                 RefreshDisplay();
-                UpdateImage(MFAExtensions.BitmapToBitmapImage(_originBitmap));
+
+
             }
             catch (Exception ex)
             {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -11,24 +8,23 @@ using Microsoft.Win32;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Windows.Controls.Primitives;
-using Path = System.IO.Path;
 using Point = System.Windows.Point;
 using Color = System.Drawing.Color;
 using DashStyle = System.Drawing.Drawing2D.DashStyle;
 using Image = System.Drawing.Image;
 using Pen = System.Drawing.Pen;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace MFATools.Views;
 
 public partial class ColorExtractionDialog
 {
     // 原始图像（始终不变，用于恢复）
-    private Bitmap _originBitmap;
-    // 当前显示的图像（用于绘制矩形，每次刷新从_originBitmap复制）
-    private Bitmap _displayBitmap;
+    private Bitmap? _originBitmap;
     // 过滤后的图像（用于预览模式）
-    private Bitmap _filteredBitmap;
+    private Bitmap? _filteredBitmap;
     // 矩形绘制参数（像素坐标）
     private (int X, int Y, int Width, int Height)? _currentRect;
     private Point _startPoint; // 起始像素坐标
@@ -69,12 +65,14 @@ public partial class ColorExtractionDialog
             if (_originBitmap == null) return;
 
             // 初始化显示图像
-            _displayBitmap = new Bitmap(_originBitmap);
             _filteredBitmap = new Bitmap(_originBitmap);
-            var imageSource = MFAExtensions.BitmapToBitmapImage(_displayBitmap);
 
             // 回到UI线程更新
-            Dispatcher.Invoke(() => UpdateImage(imageSource));
+            Dispatcher.Invoke(() =>
+            {
+                UpdateImage();
+                RefreshDisplay();
+            });
         });
     }
 
@@ -82,38 +80,38 @@ public partial class ColorExtractionDialog
     {
         base.OnClosed(e);
         _originBitmap?.Dispose();
-        _displayBitmap?.Dispose();
         _filteredBitmap?.Dispose();
     }
 
     // 更新图像显示
-    public void UpdateImage(BitmapImage? imageSource)
+    public void UpdateImage()
     {
-        if (imageSource == null) return;
+        if (_originBitmap == null) return;
 
         LoadingCircle.Visibility = Visibility.Collapsed;
         ImageArea.Visibility = Visibility.Visible;
-        image.Source = imageSource;
+
         image.SnapsToDevicePixels = true;
         SnapsToDevicePixels = true;
 
-        _originWidth = imageSource.PixelWidth;
-        _originHeight = imageSource.PixelHeight;
+        // 更新原始尺寸
+        _originWidth = _originBitmap.Width;
+        _originHeight = _originBitmap.Height;
 
-        // 计算初始缩放
+        // 重新计算缩放比例
         double maxWidth = Math.Min(1280, SystemParameters.PrimaryScreenWidth - 100);
         double maxHeight = Math.Min(720, SystemParameters.PrimaryScreenHeight - 200);
         double widthRatio = maxWidth / _originWidth;
         double heightRatio = maxHeight / _originHeight;
         _scale = Math.Min(widthRatio, heightRatio);
 
-        // 设置显示尺寸
+        // 更新显示尺寸
         image.Width = _originWidth * _scale;
         image.Height = _originHeight * _scale;
 
-        // 窗口尺寸调整
+        // 窗口调整
         Width = image.Width + 40;
-        Height = image.Height + 160; // 增加高度容纳更多文本
+        Height = image.Height + 160;
         RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
         CenterWindow();
     }
@@ -121,56 +119,74 @@ public partial class ColorExtractionDialog
     // 屏幕坐标转像素坐标（修正缩放转换）
     private (int X, int Y) ScreenToPixel(Point screenPos)
     {
-        int x = (int)Math.Round(screenPos.X / _scale);
-        int y = (int)Math.Round(screenPos.Y / _scale);
+        // 关键：屏幕坐标 ÷ 缩放比例 = 实际像素坐标
+        int x = (int)Math.Ceiling(screenPos.X / _scale);
+        int y = (int)Math.Ceiling(screenPos.Y / _scale);
         x = Math.Clamp(x, 0, (int)_originWidth);
         y = Math.Clamp(y, 0, (int)_originHeight);
         return (x, y);
     }
 
+    private WriteableBitmap? _displayWriteableBitmap;
     // 刷新显示（支持预览模式）
     private void RefreshDisplay()
     {
         if (_originBitmap == null) return;
 
-        // 从原始图像复制（清除之前的矩形）
-        lock (_originBitmap)
+        // 首次初始化或尺寸变化时，创建/重置 WriteableBitmap（仅执行一次或尺寸变化时）
+        if (_displayWriteableBitmap == null
+            || _displayWriteableBitmap.PixelWidth != _originBitmap.Width
+            || _displayWriteableBitmap.PixelHeight != _originBitmap.Height)
         {
-            _displayBitmap?.Dispose();
-            // 根据预览模式选择显示图像
-            _displayBitmap = _isPreviewMode && _filteredBitmap != null
-                ? new Bitmap(_filteredBitmap)
-                : new Bitmap(_originBitmap);
+            // 初始化 WriteableBitmap（与原始图像尺寸一致，格式用 Bgra32 兼容 WPF）
+            _displayWriteableBitmap = new WriteableBitmap(
+                _originBitmap.Width,
+                _originBitmap.Height,
+                96, 96,
+                PixelFormats.Bgra32,
+                null);
+
+            // 仅首次赋值一次 image.Source（后续不再修改 Source）
+            image.Source = _displayWriteableBitmap;
         }
 
-        SelectionCanvas.Children.Clear();
-        _selectionRectangle = null;
-
-        // 绘制矩形
-        if (_currentRect.HasValue)
+        // 临时 Bitmap 用于绘制（避免直接修改原始图像）
+        using (var tempBitmap = new Bitmap(
+                   _isPreviewMode && _filteredBitmap != null ? _filteredBitmap : _originBitmap))
         {
-            var rect = _currentRect.Value;
-            using (var g = Graphics.FromImage(_displayBitmap))
+            // 绘制矩形（如果需要）
+            if (_currentRect.HasValue)
             {
-                g.SmoothingMode = SmoothingMode.None;
-                g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
-                using (var pen = new Pen(Color.FromArgb(SettingDialog.DefaultLineColor.Color.R,
-                               SettingDialog.DefaultLineColor.Color.G,
-                               SettingDialog.DefaultLineColor.Color.B),
-                           SettingDialog.DefaultLineThickness))
+                var rect = _currentRect.Value;
+                using (var g = Graphics.FromImage(tempBitmap))
                 {
-                    pen.DashStyle = DashStyle.Dash;
-                    pen.DashPattern = [2, 2];
-                    g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+                    g.SmoothingMode = SmoothingMode.None;
+                    g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    using (var pen = new Pen(
+                               Color.FromArgb(
+                                   SettingDialog.DefaultLineColor.Color.R,
+                                   SettingDialog.DefaultLineColor.Color.G,
+                                   SettingDialog.DefaultLineColor.Color.B),
+                               SettingDialog.DefaultLineThickness))
+                    {
+                        pen.DashStyle = DashStyle.Dash;
+                        pen.DashPattern = [2, 2];
+                        g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
+                    }
                 }
             }
+
+            // 将临时 Bitmap 的像素复制到 WriteableBitmap（核心优化：只更新像素，不换 Source）
+            tempBitmap.UpdateWriteableBitmap(_displayWriteableBitmap);
         }
 
-        // 更新UI显示
-        image.Source = MFAExtensions.BitmapToBitmapImage(_displayBitmap);
+        // 清除选择画布（原有逻辑保留）
+        SelectionCanvas.Children.Clear();
+        _selectionRectangle = null;
     }
+
 
     // 窗口居中
     private void CenterWindow()
@@ -229,7 +245,7 @@ public partial class ColorExtractionDialog
         {
             // 开始绘制矩形
             var position = e.GetPosition(image);
-            var canvasPosition = e.GetPosition(SelectionCanvas);
+            var canvasPosition = e.GetPosition(ImageArea);
             if (canvasPosition.X < image.ActualWidth + 5 && canvasPosition.Y < image.ActualHeight + 5 && canvasPosition is { X: > -5, Y: > -5 })
             {
                 position.X = Math.Clamp(position.X, 0, image.ActualWidth);
@@ -288,7 +304,8 @@ public partial class ColorExtractionDialog
             _currentRect = (Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(w), Convert.ToInt32(h));
 
             // 绘制临时矩形
-            DrawRectangle(Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(w), Convert.ToInt32(h));
+            // DrawRectangle(Convert.ToInt32(x), Convert.ToInt32(y), Convert.ToInt32(w), Convert.ToInt32(h));
+            RefreshDisplay();
 
             // 更新坐标文本为矩形区域
             positionText = $" [ {x}, {y}, {w}, {h} ]";
@@ -363,113 +380,167 @@ public partial class ColorExtractionDialog
         }
     }
 
-    // 计算RGB范围
+    // 计算RGB范围（优化版：使用LockBits）
     private (List<int> Lower, List<int> Upper) CalculateRGBRange(int x, int y, int width, int height)
     {
         int minR = 255, minG = 255, minB = 255;
         int maxR = 0, maxG = 0, maxB = 0;
 
-        for (int i = x; i < x + width; i++)
+        // 锁定原始图像的像素数据（仅一次锁定，而非逐像素调用GetPixel）
+        Rectangle rect = new Rectangle(x, y, width, height);
+        BitmapData bmpData = _originBitmap.LockBits(rect, ImageLockMode.ReadOnly, _originBitmap.PixelFormat);
+        IntPtr ptr = bmpData.Scan0;
+        int bytesPerPixel = Image.GetPixelFormatSize(_originBitmap.PixelFormat) / 8;
+        int stride = bmpData.Stride; // 每行字节数（可能比 width*bytesPerPixel 大，因内存对齐）
+        byte[] rgbValues = new byte[stride * height];
+        Marshal.Copy(ptr, rgbValues, 0, rgbValues.Length);
+
+        try
         {
-            for (int j = y; j < y + height; j++)
+            // 遍历矩形区域的每个像素（直接操作字节数组）
+            for (int j = 0; j < height; j++) // 行（y方向）
             {
-                Color pixel = _originBitmap.GetPixel(i, j);
-                minR = Math.Min(minR, pixel.R);
-                minG = Math.Min(minG, pixel.G);
-                minB = Math.Min(minB, pixel.B);
-                maxR = Math.Max(maxR, pixel.R);
-                maxG = Math.Max(maxG, pixel.G);
-                maxB = Math.Max(maxB, pixel.B);
+                for (int i = 0; i < width; i++) // 列（x方向）
+                {
+                    // 计算当前像素在字节数组中的索引（注意stride可能大于实际宽度的字节数）
+                    int index = j * stride + i * bytesPerPixel;
+                    // 注意：Bitmap的像素格式通常是BGR（蓝绿红），而非RGB
+                    byte b = rgbValues[index];
+                    byte g = rgbValues[index + 1];
+                    byte r = rgbValues[index + 2];
+
+                    // 更新最值
+                    minR = Math.Min(minR, r);
+                    minG = Math.Min(minG, g);
+                    minB = Math.Min(minB, b);
+                    maxR = Math.Max(maxR, r);
+                    maxG = Math.Max(maxG, g);
+                    maxB = Math.Max(maxB, b);
+                }
             }
         }
+        finally
+        {
+            // 必须解锁，否则Bitmap会损坏
+            _originBitmap.UnlockBits(bmpData);
+        }
 
-        return (
-            new List<int>
-            {
-                minR,
-                minG,
-                minB
-            },
-            new List<int>
-            {
-                maxR,
-                maxG,
-                maxB
-            }
-        );
+        return ([minR, minG, minB], [maxR, maxG, maxB]);
     }
-
-    // 计算HSV范围
+    
+    // 计算HSV范围（优化版：使用LockBits）
     private (List<int> Lower, List<int> Upper) CalculateHSVRange(int x, int y, int width, int height)
     {
         int minH = 180, minS = 255, minV = 255;
         int maxH = 0, maxS = 0, maxV = 0;
 
-        for (int i = x; i < x + width; i++)
+        // 锁定原始图像中指定区域的像素数据（仅读取）
+        Rectangle rect = new Rectangle(x, y, width, height);
+        BitmapData bmpData = _originBitmap.LockBits(rect, ImageLockMode.ReadOnly, _originBitmap.PixelFormat);
+        IntPtr ptr = bmpData.Scan0;
+        int bytesPerPixel = Image.GetPixelFormatSize(_originBitmap.PixelFormat) / 8; // 每个像素的字节数（3=24位，4=32位）
+        int stride = bmpData.Stride; // 每行的字节数（考虑内存对齐，可能大于 width*bytesPerPixel）
+        byte[] rgbValues = new byte[stride * height]; // 存储锁定区域的像素数据
+        Marshal.Copy(ptr, rgbValues, 0, rgbValues.Length);
+
+        try
         {
-            for (int j = y; j < y + height; j++)
+            // 遍历矩形区域的每个像素（行→列）
+            for (int j = 0; j < height; j++) // j：y方向偏移（从0到height-1）
             {
-                Color pixel = _originBitmap.GetPixel(i, j);
-                ColorToHSV(pixel, out double h, out double s, out double v);
+                for (int i = 0; i < width; i++) // i：x方向偏移（从0到width-1）
+                {
+                    // 计算当前像素在字节数组中的索引（关键：处理内存对齐）
+                    int index = j * stride + i * bytesPerPixel;
 
-                int cvH = (int)Math.Round(h / 2);
-                int cvS = (int)Math.Round(s * 255);
-                int cvV = (int)Math.Round(v * 255);
+                    // 读取BGR值（Bitmap像素格式通常为BGR，而非RGB）
+                    byte b = rgbValues[index];
+                    byte g = rgbValues[index + 1];
+                    byte r = rgbValues[index + 2];
 
-                cvH = Math.Clamp(cvH, 0, 180);
-                cvS = Math.Clamp(cvS, 0, 255);
-                cvV = Math.Clamp(cvV, 0, 255);
+                    // 转换为HSV
+                    ColorToHSV(Color.FromArgb(r, g, b), out double h, out double s, out double v);
 
-                minH = Math.Min(minH, cvH);
-                minS = Math.Min(minS, cvS);
-                minV = Math.Min(minV, cvV);
-                maxH = Math.Max(maxH, cvH);
-                maxS = Math.Max(maxS, cvS);
-                maxV = Math.Max(maxV, cvV);
+                    // 转换为OpenCV兼容范围（H:0-180，S/V:0-255）
+                    int cvH = (int)Math.Round(h / 2);
+                    int cvS = (int)Math.Round(s * 255);
+                    int cvV = (int)Math.Round(v * 255);
+
+                    // 边界限制
+                    cvH = Math.Clamp(cvH, 0, 180);
+                    cvS = Math.Clamp(cvS, 0, 255);
+                    cvV = Math.Clamp(cvV, 0, 255);
+
+                    // 更新最值
+                    minH = Math.Min(minH, cvH);
+                    minS = Math.Min(minS, cvS);
+                    minV = Math.Min(minV, cvV);
+                    maxH = Math.Max(maxH, cvH);
+                    maxS = Math.Max(maxS, cvS);
+                    maxV = Math.Max(maxV, cvV);
+                }
             }
+        }
+        finally
+        {
+            // 必须解锁，否则Bitmap会损坏
+            _originBitmap.UnlockBits(bmpData);
         }
 
         return (
-            new List<int>
-            {
-                minH,
-                minS,
-                minV
-            },
-            new List<int>
-            {
-                maxH,
-                maxS,
-                maxV
-            }
+            [minH, minS, minV],
+            [maxH, maxS, maxV]
         );
     }
 
-    // 计算灰度范围
+    // 计算灰度范围（优化版：使用LockBits）
     private (List<int> Lower, List<int> Upper) CalculateGrayRange(int x, int y, int width, int height)
     {
         int minGray = 255, maxGray = 0;
 
-        for (int i = x; i < x + width; i++)
+        // 锁定原始图像中指定区域的像素数据（仅读取）
+        Rectangle rect = new Rectangle(x, y, width, height);
+        BitmapData bmpData = _originBitmap.LockBits(rect, ImageLockMode.ReadOnly, _originBitmap.PixelFormat);
+        IntPtr ptr = bmpData.Scan0;
+        int bytesPerPixel = Image.GetPixelFormatSize(_originBitmap.PixelFormat) / 8;
+        int stride = bmpData.Stride;
+        byte[] rgbValues = new byte[stride * height];
+        Marshal.Copy(ptr, rgbValues, 0, rgbValues.Length);
+
+        try
         {
-            for (int j = y; j < y + height; j++)
+            // 遍历矩形区域的每个像素（行→列）
+            for (int j = 0; j < height; j++)
             {
-                Color pixel = _originBitmap.GetPixel(i, j);
-                int gray = (int)(0.299 * pixel.R + 0.587 * pixel.G + 0.114 * pixel.B);
-                minGray = Math.Min(minGray, gray);
-                maxGray = Math.Max(maxGray, gray);
+                for (int i = 0; i < width; i++)
+                {
+                    // 计算当前像素在字节数组中的索引
+                    int index = j * stride + i * bytesPerPixel;
+
+                    // 读取BGR值
+                    byte b = rgbValues[index];
+                    byte g = rgbValues[index + 1];
+                    byte r = rgbValues[index + 2];
+
+                    // 计算灰度值（符合 luminance 标准公式）
+                    int gray = (int)(0.299 * r + 0.587 * g + 0.114 * b);
+                    gray = Math.Clamp(gray, 0, 255); // 确保在0-255范围内
+
+                    // 更新最值
+                    minGray = Math.Min(minGray, gray);
+                    maxGray = Math.Max(maxGray, gray);
+                }
             }
+        }
+        finally
+        {
+            // 解锁像素数据
+            _originBitmap.UnlockBits(bmpData);
         }
 
         return (
-            new List<int>
-            {
-                minGray
-            },
-            new List<int>
-            {
-                maxGray
-            }
+            [minGray],
+            [maxGray]
         );
     }
 
@@ -584,20 +655,24 @@ public partial class ColorExtractionDialog
         {
             try
             {
+                // 重置状态
+                _displayWriteableBitmap = null;
+                SelectionCanvas.Children.Clear();
+                _selectionRectangle = null;
                 _originBitmap?.Dispose();
-                _originBitmap = new Bitmap(openFileDialog.FileName);
                 _currentRect = null;
                 _tempColorRange = null;
                 _isPreviewMode = false;
                 SwitchButton.Content = "预览";
 
-                _displayBitmap?.Dispose();
-                _displayBitmap = new Bitmap(_originBitmap);
+                // 加载新图像
+                _originBitmap = new Bitmap(openFileDialog.FileName);
                 _filteredBitmap?.Dispose();
                 _filteredBitmap = new Bitmap(_originBitmap);
 
+
+                UpdateImage();
                 RefreshDisplay();
-                UpdateImage(MFAExtensions.BitmapToBitmapImage(_originBitmap));
             }
             catch (Exception ex)
             {
@@ -607,6 +682,9 @@ public partial class ColorExtractionDialog
     }
 
     private System.Windows.Shapes.Rectangle? _selectionRectangle;
+    public ScaleTransform? ScaleTransform;
+    public TranslateTransform? TranslateTransform;
+    public TransformGroup? Group;
     // 绘制矩形（统一缩放处理）
     public void DrawRectangle(int x, int y, int width, int height)
     {
@@ -615,29 +693,55 @@ public partial class ColorExtractionDialog
         y = Math.Clamp(y, 0, (int)_originHeight - 1);
         width = Math.Clamp(width, 1, (int)_originWidth - x) + 1;
         height = Math.Clamp(height, 1, (int)_originHeight - y) + 1;
+        Group ??= new TransformGroup();
+        if (ScaleTransform == null)
+        {
+            ScaleTransform = new ScaleTransform(_scale, _scale);
+            Group.Children.Add(ScaleTransform);
+        }
+        else
+        {
+            ScaleTransform.ScaleX = _scale;
+            ScaleTransform.ScaleY = _scale;
+        }
+        if (TranslateTransform == null)
+        {
+            TranslateTransform = new TranslateTransform(x - 1, y - 1);
+            Group.Children.Add(TranslateTransform);
+        }
+        else
+        {
+            TranslateTransform.X = x - 1;
+            TranslateTransform.Y = y - 1;
+        }
 
         // 清除之前的矩形
-        if (_selectionRectangle != null)
-            SelectionCanvas.Children.Remove(_selectionRectangle);
-
-        // 创建矩形（保持样式一致）
-        _selectionRectangle = new System.Windows.Shapes.Rectangle
+        if (_selectionRectangle == null)
         {
-            Stroke = SettingDialog.DefaultLineColor,
-            StrokeThickness = SettingDialog.DefaultLineThickness,
-            StrokeDashArray =
+            _selectionRectangle = new System.Windows.Shapes.Rectangle
             {
-                2,
-                2
-            },
-            Width = width,
-            Height = height,
-            RenderTransform = new TranslateTransform(x - 1, y - 1)
-        };
-        SelectionCanvas.Children.Add(_selectionRectangle);
+                Stroke = SettingDialog.DefaultLineColor,
+                StrokeThickness = SettingDialog.DefaultLineThickness,
+                StrokeDashArray =
+                {
+                    2,
+                    2
+                },
+                Width = width,
+                Height = height,
+                RenderTransform = Group
+
+            };
+            SelectionCanvas.Children.Add(_selectionRectangle);
+        }
+        else
+        {
+            _selectionRectangle.Width = width;
+            _selectionRectangle.Height = height;
+        }
     }
 
-    // 编辑矩形
+// 编辑矩形
     private void Edit(object sender, RoutedEventArgs e)
     {
         var initialRect = _currentRect ?? (0, 0, 1, 1);
@@ -776,7 +880,7 @@ public partial class ColorExtractionDialog
         Close();
     }
 
-    // 预览/还原切换按钮
+// 预览/还原切换按钮
     private void SwitchButton_OnClick(object sender, RoutedEventArgs e)
     {
         if (sender is not ToggleButton toggleButton) return;
@@ -798,8 +902,8 @@ public partial class ColorExtractionDialog
         }
     }
 
-    // 应用颜色过滤（用于预览）
-    // 应用颜色过滤（用于预览）
+// 应用颜色过滤（用于预览）
+// 应用颜色过滤（用于预览）
     private void ApplyColorFilter()
     {
         if (_originBitmap == null || (!_tempColorRange.HasValue && (OutputLower == null || OutputUpper == null)))
@@ -927,6 +1031,7 @@ public partial class ColorExtractionDialog
             }
         }
     }
+
     private void SelectType_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _tempColorRange = null;

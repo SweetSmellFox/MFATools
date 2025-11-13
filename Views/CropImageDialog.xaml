@@ -24,7 +24,7 @@
                                 <TranslateTransform x:Name="ttf" />
                             </TransformGroup>
                         </Grid.RenderTransform>
-                        <Image Grid.Row="0" Grid.Column="0" x:Name="image" Stretch="Uniform" MaxHeight="720"
+                        <Image Grid.Row="0" Grid.Column="0" x:Name="image" MaxHeight="720"
                                MaxWidth="1280" />
                         <Canvas Grid.Row="0" Grid.Column="0" x:Name="SelectionCanvas" Background="Transparent"
                                 Panel.ZIndex="1"

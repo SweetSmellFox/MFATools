@@ -7,6 +7,7 @@ using System.Windows.Media.Imaging;
 using MFATools.ViewModels;
 using MaaFramework.Binding;
 using MaaFramework.Binding.Buffers;
+using MFATools.Views;
 using Newtonsoft.Json;
 
 // using PaddleOCRSharp;
@@ -33,14 +34,15 @@ public class OCRHelper
     {
     }
 
-    public static string ReadTextFromMAATasker(int x, int y, int width, int height)
+    public static string ReadTextFromMAATasker(Bitmap bitmap,int x, int y, int width, int height)
     {
         string result = string.Empty;
         TaskItemViewModel taskItemViewModel = new TaskItemViewModel
         {
             Task = new TaskModel
             {
-                Recognition = "OCR",
+                Recognition = "Custom",
+                CustomRecognition = "MFAOCRRecognition",
                 Roi = new List<int>
                 {
                     x,
@@ -51,16 +53,17 @@ public class OCRHelper
             },
             Name = "AppendOCR",
         };
+        MFAOCRRecognition.Bitmap = bitmap;
         var job = MaaProcessor.Instance.GetCurrentTasker()?
             .AppendTask(taskItemViewModel.Name, taskItemViewModel.ToString());
         if (job?.Wait() == MaaJobStatus.Succeeded)
         {
-            var query =
-                JsonConvert.DeserializeObject<RecognitionQuery>(job.QueryRecognitionDetail()?
-                        .Detail
-                    ?? string.Empty);
-            if (!string.IsNullOrWhiteSpace(query?.Best?.Text))
-                result = query.Best.Text;
+            // var query =
+            //     JsonConvert.DeserializeObject<RecognitionQuery>(job.QueryRecognitionDetail()?
+            //             .Detail
+            //         ?? string.Empty);
+            if (!string.IsNullOrWhiteSpace(MFAOCRRecognition.Output))
+                result = MFAOCRRecognition.Output;
         }
         else
         {
@@ -68,6 +71,38 @@ public class OCRHelper
         }
 
         Console.WriteLine($"识别结果: {result}");
+        // TaskItemViewModel taskItemViewModel = new TaskItemViewModel
+        // {
+        //     Task = new TaskModel
+        //     {
+        //         Recognition = "OCR",
+        //         Roi = new List<int>
+        //         {
+        //             x,
+        //             y,
+        //             width,
+        //             height
+        //         }
+        //     },
+        //     Name = "AppendOCR",
+        // };
+        // var job = MaaProcessor.Instance.GetCurrentTasker()?
+        //     .AppendTask(taskItemViewModel.Name, taskItemViewModel.ToString());
+        // if (job?.Wait() == MaaJobStatus.Succeeded)
+        // {
+        //     var query =
+        //         JsonConvert.DeserializeObject<RecognitionQuery>(job.QueryRecognitionDetail()?
+        //                 .Detail
+        //             ?? string.Empty);
+        //     if (!string.IsNullOrWhiteSpace(query?.Best?.Text))
+        //         result = query.Best.Text;
+        // }
+        // else
+        // {
+        //     Growls.ErrorGlobal("识别失败！");
+        // }
+        //
+        // Console.WriteLine($"识别结果: {result}");
         return result;
     }
 

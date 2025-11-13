@@ -121,7 +121,7 @@ public partial class MainWindow
         {
             btnCustom.Visibility = adbTab.IsSelected ? Visibility.Visible : Visibility.Collapsed;
         }
-        
+
         MaaProcessor.Instance.SetCurrentTasker();
 
         if (Data.IsAdb() && "adb".Equals(MaaProcessor.Config.AdbDevice.AdbPath) && DataSet.TryGetData<JObject>("AdbDevice", out var jObject))
@@ -522,7 +522,7 @@ public partial class MainWindow
         if (recognition.ShowDialog() == true && recognition.Output != null)
         {
             AppendLog(new Attribute("expected",
-                OCRHelper.ReadTextFromMAATasker(recognition.Output[0], recognition.Output[1],
+                OCRHelper.ReadTextFromMAATasker(recognition.OutputBitmap, recognition.Output[0], recognition.Output[1],
                     recognition.Output[2], recognition.Output[3])));
             AppendLog(new Attribute("recommended roi", recognition.OutputRoi));
         }

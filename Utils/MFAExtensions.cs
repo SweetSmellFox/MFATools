@@ -4,6 +4,7 @@ using HandyControl.Controls;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using WPFLocalizeExtension.Engine;
 using WPFLocalizeExtension.Extensions;
@@ -36,6 +37,38 @@ public static class MFAExtensions
         {
             LoggerService.LogError(e);
             return null;
+        }
+    }
+    public static void UpdateWriteableBitmap(this Bitmap? srcBitmap, WriteableBitmap? destWb)
+    {
+        if (srcBitmap == null || destWb == null) return;
+
+        // 锁定 GDI+ Bitmap 的像素（非托管内存）
+        var rect = new Rectangle(0, 0, srcBitmap.Width, srcBitmap.Height);
+        var bmpData = srcBitmap.LockBits(
+            rect,
+            ImageLockMode.ReadOnly,
+            PixelFormat.Format32bppArgb); // 强制 32 位 ARGB 格式，与 WriteableBitmap 兼容
+
+        try
+        {
+            // 锁定 WriteableBitmap 的缓冲区（托管内存）
+            destWb.Lock();
+
+            // 复制像素数据（非托管 → 托管）
+            int byteCount = bmpData.Stride * srcBitmap.Height;
+            byte[] buffer = new byte[byteCount];
+            Marshal.Copy(bmpData.Scan0, buffer, 0, byteCount); // 非托管 → 字节数组
+            Marshal.Copy(buffer, 0, destWb.BackBuffer, byteCount); // 字节数组 → WriteableBitmap 缓冲区
+
+            // 通知 UI 更新区域（全图更新，可改为仅更新矩形区域进一步优化）
+            destWb.AddDirtyRect(new Int32Rect(0, 0, srcBitmap.Width, srcBitmap.Height));
+        }
+        finally
+        {
+            // 解锁资源（必须执行）
+            srcBitmap.UnlockBits(bmpData);
+            destWb.Unlock();
         }
     }
     

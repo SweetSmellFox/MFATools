@@ -399,9 +399,9 @@ public class MaaProcessor
                 Config.DesktopWindow.Check);
     }
 
-    private void RegisterCustomRecognitionsAndActions(MaaTasker _)
+    private void RegisterCustomRecognitionsAndActions(MaaTasker tasker)
     {
-
+        tasker.Resource.Register(new MFAOCRRecognition());
     }
 
     private void HandleInitializationError(Exception e,
