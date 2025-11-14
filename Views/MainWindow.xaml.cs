@@ -536,4 +536,9 @@ public partial class MainWindow
     private void Copy(object sender, RoutedEventArgs e)
     {
     }
+    
+    private void Edit(object sender, RoutedEventArgs e)
+    {
+        Editor.CreateEditor();
+    }
 }
