@@ -7,7 +7,6 @@ namespace MFATools.Views;
 
 public partial class RoiEditorDialog
 {
-    private bool _hasColor = false;
     public RoiEditorDialog(Rectangle? rectangle = null, double d = 0)
     {
         InitializeComponent();

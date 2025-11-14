@@ -50,24 +50,28 @@ public class MFAOCRRecognition : IMaaCustomRecognition
         return true;
     }
 
-    public static byte[] BitmapToBytes(Bitmap Bitmap)
+    public static byte[] BitmapToBytes(Bitmap? bitmap)
     {
-        MemoryStream ms = null;
+        if (bitmap == null)
+            return [];
+
+        MemoryStream? ms = null;
         try
         {
             ms = new MemoryStream();
-            Bitmap.Save(ms, ImageFormat.Png);
+            bitmap.Save(ms, ImageFormat.Png);
             byte[] byteImage = new Byte[ms.Length];
             byteImage = ms.ToArray();
             return byteImage;
         }
         catch (ArgumentNullException ex)
         {
-            throw ex;
+            LoggerService.LogError(ex);
+            return [];
         }
         finally
         {
-            ms.Close();
+            ms?.Close();
         }
     }
 }

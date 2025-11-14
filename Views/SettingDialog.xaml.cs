@@ -106,7 +106,7 @@ public partial class SettingDialog
         Close();
     }
 
-    public static string RelativePath { get; set; } = DataSet.GetData("RelativePath", string.Empty);
+    public static string RelativePath { get; set; } = DataSet.GetData("RelativePath", string.Empty) ?? string.Empty;
     private void RelativePathBox_OnTextChanged(object sender, TextChangedEventArgs e)
     {
         if (RelativePath != RelativePathBox.Text)

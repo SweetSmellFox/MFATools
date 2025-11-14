@@ -54,7 +54,8 @@ public partial class MainWindow
             TaskManager.RunTask(async () =>
             {
                 await Task.Delay(100);
-                Data.ControllerType = DataSet.GetData("ControllerType", 0);
+                if (Data != null)
+                    Data.ControllerType = DataSet.GetData("ControllerType", 0);
                 await Task.Delay(500);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -115,7 +116,7 @@ public partial class MainWindow
         Topmost = e.NewValue;
     }
 
-    private void TabControl_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void TabControl_OnSelectionChanged(object? sender, SelectionChangedEventArgs? e)
     {
         if (adbTab != null && btnCustom != null)
         {
@@ -124,7 +125,7 @@ public partial class MainWindow
 
         MaaProcessor.Instance.SetCurrentTasker();
 
-        if (Data.IsAdb() && "adb".Equals(MaaProcessor.Config.AdbDevice.AdbPath) && DataSet.TryGetData<JObject>("AdbDevice", out var jObject))
+        if (Data != null && Data.IsAdb() && "adb".Equals(MaaProcessor.Config.AdbDevice.AdbPath) && DataSet.TryGetData<JObject>("AdbDevice", out var jObject))
         {
             var settings = new JsonSerializerSettings();
             settings.Converters.Add(new AdbInputMethodsConverter());
@@ -483,7 +484,7 @@ public partial class MainWindow
         CropImageDialog cropImageDialog = new CropImageDialog();
         if (cropImageDialog.ShowDialog() == true)
         {
-            AppendLog(new Attribute("template", Path.Combine(SettingDialog.RelativePath, cropImageDialog.Output)));
+            AppendLog(new Attribute("template", Path.Combine(SettingDialog.RelativePath, cropImageDialog.Output ?? "")));
             AppendLog(new Attribute("origin roi", cropImageDialog.OutputOriginRoi));
             AppendLog(new Attribute("recommended roi", cropImageDialog.OutputRoi));
         }
@@ -536,7 +537,7 @@ public partial class MainWindow
     private void Copy(object sender, RoutedEventArgs e)
     {
     }
-    
+
     private void Edit(object sender, RoutedEventArgs e)
     {
         Editor.CreateEditor();

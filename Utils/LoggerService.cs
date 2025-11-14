@@ -16,9 +16,9 @@ public static class LoggerService
         Console.WriteLine("[INFO]" + message);
     }
     
-    public static void LogInfo(object message)
+    public static void LogInfo(object? message)
     {
-        Logger.Information(message.ToString());
+        Logger.Information(message?.ToString() ?? String.Empty);
         Console.WriteLine("[INFO]" + message);
     }
     public static void LogError(object? e)

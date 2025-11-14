@@ -34,7 +34,7 @@ public class OCRHelper
     {
     }
 
-    public static string ReadTextFromMAATasker(Bitmap bitmap,int x, int y, int width, int height)
+    public static string ReadTextFromMAATasker(Bitmap? bitmap,int x, int y, int width, int height)
     {
         string result = string.Empty;
         TaskItemViewModel taskItemViewModel = new TaskItemViewModel

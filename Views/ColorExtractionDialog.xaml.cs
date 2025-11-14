@@ -51,7 +51,7 @@ public partial class ColorExtractionDialog
     // 预览模式状态
     private bool _isPreviewMode;
     // 临时存储实时计算的颜色范围
-    private (List<int> Lower, List<int> Upper)? _tempColorRange;
+    private (List<int>? Lower, List<int>? Upper)? _tempColorRange;
 
     public ColorExtractionDialog()
     {
@@ -349,15 +349,15 @@ public partial class ColorExtractionDialog
                 };
 
                 string rangeText = $"{colorType}:{Environment.NewLine}";
-                rangeText += $"Lower: {string.Join(", ", _tempColorRange.Value.Lower)}{Environment.NewLine}";
-                rangeText += $"Upper: {string.Join(", ", _tempColorRange.Value.Upper)}";
+                rangeText += $"Lower: {string.Join(", ", _tempColorRange?.Lower ?? [])}{Environment.NewLine}";
+                rangeText += $"Upper: {string.Join(", ", _tempColorRange?.Upper ?? [])}";
                 positionText += $"{Environment.NewLine}{rangeText}";
             }
             MousePositionText.Text = positionText;
 
         }
     }
-
+#pragma warning disable CS8602
     // 实时计算颜色范围
     private (List<int> Lower, List<int> Upper) CalculateColorRange(int x, int y, int width, int height)
     {
@@ -427,7 +427,7 @@ public partial class ColorExtractionDialog
 
         return ([minR, minG, minB], [maxR, maxG, maxB]);
     }
-    
+
     // 计算HSV范围（优化版：使用LockBits）
     private (List<int> Lower, List<int> Upper) CalculateHSVRange(int x, int y, int width, int height)
     {
@@ -854,8 +854,8 @@ public partial class ColorExtractionDialog
                 };
                 var positionText = _currentRect != null ? $"[ {_currentRect.Value.X}, {_currentRect.Value.Y}, {_currentRect.Value.Width}, {_currentRect.Value.Height} ]{Environment.NewLine}" : "";
                 string rangeText = $"{colorType}:{Environment.NewLine}";
-                rangeText += $"Lower: {string.Join(", ", _tempColorRange.Value.Lower)}{Environment.NewLine}";
-                rangeText += $"Upper: {string.Join(", ", _tempColorRange.Value.Upper)}";
+                rangeText += $"Lower: {string.Join(", ", _tempColorRange?.Lower ?? [])}{Environment.NewLine}";
+                rangeText += $"Upper: {string.Join(", ", _tempColorRange?.Upper ?? [])}";
 
                 // 合并显示文本
                 MousePositionText.Text = $"{positionText}{rangeText}";
@@ -910,7 +910,7 @@ public partial class ColorExtractionDialog
             return;
 
         // 获取当前有效的颜色范围
-        var (lower, upper) = _tempColorRange ?? (OutputLower, OutputUpper);
+        var (lower, upper) = _tempColorRange ?? (OutputLower ?? null, OutputUpper ?? []);
         if (lower == null || upper == null) return;
 
         // 复制原始图像用于过滤
@@ -1047,8 +1047,8 @@ public partial class ColorExtractionDialog
         if (_tempColorRange != null)
         {
             rangeText = $"{colorType}:{Environment.NewLine}";
-            rangeText += $"Lower: {string.Join(", ", _tempColorRange.Value.Lower)}{Environment.NewLine}";
-            rangeText += $"Upper: {string.Join(", ", _tempColorRange.Value.Upper)}";
+            rangeText += $"Lower: {string.Join(", ", _tempColorRange?.Lower ?? [])}{Environment.NewLine}";
+            rangeText += $"Upper: {string.Join(", ", _tempColorRange?.Upper ?? [])}";
         }
         // 合并显示文本
         MousePositionText.Text = $"{positionText}{rangeText}";
