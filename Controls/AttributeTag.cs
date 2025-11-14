@@ -203,7 +203,7 @@ public class AttributeTag : Tag
 
     private void CopyKey(object sender, RoutedEventArgs e)
     {
-        Clipboard.SetDataObject(Attribute.GetKey());
+        Clipboard.SetDataObject(Attribute.GetKey().Replace("recommended roi", "roi").Replace("origin roi", "roi"));
         Tip();
     }
 
