@@ -1,4 +1,5 @@
-﻿using MFATools.Data;
+﻿using HandyControl.Data;
+using MFATools.Data;
 using System;
 using System.Windows;
 using System.Windows.Media;
@@ -46,6 +47,8 @@ public partial class SettingDialog
         }
         MainWindow.Instance?.AddLanguageOption(settingPanel);
         RelativePathBox.Text = RelativePath;
+        XExpansionBox.Value = MFAExtensions.HorizontalExpansion;
+        YExpansionBox.Value = MFAExtensions.VerticalExpansion;
         // 初始化线条样式设置
         InitializeLineStyleSettings();
     }
@@ -114,5 +117,16 @@ public partial class SettingDialog
             RelativePath = RelativePathBox.Text;
             DataSet.SetData("RelativePath", RelativePath);
         }
+    }
+    private void XExpansionBox_OnValueChanged(object? sender, FunctionEventArgs<double> e)
+    {
+        if (Convert.ToInt32(XExpansionBox.Value) != MFAExtensions.HorizontalExpansion)
+            MFAExtensions.HorizontalExpansion = (int)XExpansionBox.Value;
+    }
+    
+    private void YExpansionBox_OnValueChanged(object? sender, FunctionEventArgs<double> e)
+    {
+        if (Convert.ToInt32(YExpansionBox.Value) != MFAExtensions.VerticalExpansion)
+            MFAExtensions.VerticalExpansion = (int)YExpansionBox.Value;
     }
 }

@@ -30,12 +30,12 @@ public partial class RecognitionTextDialog
     private Point _startPoint; // 起始像素坐标
 
     // 输出相关
-    private List<int>? _output;
+    private List<int>? _outputOriginRoi { get; set; }
 
-    public List<int>? Output
+    public List<int>? OutputOriginRoi
     {
-        get => _output;
-        set => _output = value?.Select(i => i < 0 ? 0 : i).ToList();
+        get => _outputOriginRoi;
+        set => _outputOriginRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
 
     private List<int>? _outputRoi { get; set; }
@@ -117,7 +117,7 @@ public partial class RecognitionTextDialog
     private (int X, int Y) ScreenToPixel(Point screenPos)
     {
         // 关键：屏幕坐标 ÷ 缩放比例 = 实际像素坐标
-        int x = (int)Math.Ceiling(screenPos.X / _scale); 
+        int x = (int)Math.Ceiling(screenPos.X / _scale);
         int y = (int)Math.Ceiling(screenPos.Y / _scale);
         x = Math.Clamp(x, 0, (int)_originWidth);
         y = Math.Clamp(y, 0, (int)_originHeight);
@@ -178,7 +178,7 @@ public partial class RecognitionTextDialog
             // 将临时 Bitmap 的像素复制到 WriteableBitmap（核心优化：只更新像素，不换 Source）
             tempBitmap.UpdateWriteableBitmap(_displayWriteableBitmap);
         }
-        
+
     }
 
     // 窗口居中（统一实现）
@@ -337,13 +337,13 @@ public partial class RecognitionTextDialog
         w = Math.Clamp(w, 1, (int)_originWidth - x);
         h = Math.Clamp(h, 1, (int)_originHeight - y);
 
-        Output = new List<int>
-        {
+        OutputOriginRoi =
+        [
             x,
             y,
             w,
             h
-        };
+        ];
 
         // 计算扩展ROI（保持原有业务逻辑）
         if (_originBitmap != null)
@@ -352,13 +352,13 @@ public partial class RecognitionTextDialog
             var roiY = Math.Max(y - (int)(MFAExtensions.VerticalExpansion / 2), 0);
             var roiW = Math.Min(w + (int)(MFAExtensions.HorizontalExpansion), _originBitmap.Width - roiX);
             var roiH = Math.Min(h + (int)(MFAExtensions.VerticalExpansion), _originBitmap.Height - roiY);
-            OutputRoi = new List<int>
-            {
+            OutputRoi =
+            [
                 roiX,
                 roiY,
                 roiW,
                 roiH
-            };
+            ];
             OutputBitmap = new Bitmap(_originBitmap);
             ;
         }

@@ -57,7 +57,7 @@ public partial class CropImageDialog
         {
             _originBitmap = MaaProcessor.Instance.GetBitmap();
             if (_originBitmap == null) return;
-            
+
             // 回到UI线程更新
             Dispatcher.Invoke(() =>
             {
@@ -110,13 +110,13 @@ public partial class CropImageDialog
     private (int X, int Y) ScreenToPixel(Point screenPos)
     {
         // 关键：屏幕坐标 ÷ 缩放比例 = 实际像素坐标
-        int x = (int)Math.Ceiling(screenPos.X / _scale); 
+        int x = (int)Math.Ceiling(screenPos.X / _scale);
         int y = (int)Math.Ceiling(screenPos.Y / _scale);
         x = Math.Clamp(x, 0, (int)_originWidth);
         y = Math.Clamp(y, 0, (int)_originHeight);
         return (x, y);
     }
-    
+
     private WriteableBitmap? _displayWriteableBitmap;
     // 刷新显示（恢复原始图像并绘制矩形）
     private void RefreshDisplay()
@@ -341,24 +341,24 @@ public partial class CropImageDialog
         height = Math.Clamp(height, 1, _originBitmap.Height - y);
 
         // 计算原始ROI和扩展ROI
-        OutputOriginRoi = new List<int>
-        {
+        OutputOriginRoi =
+        [
             x,
             y,
             width,
             height
-        };
-        int roiX = Math.Max(x - 50, 0); // 原代码中100/2=50
-        int roiY = Math.Max(y - 50, 0);
-        int roiW = Math.Min(width + 100, _originBitmap.Width - roiX);
-        int roiH = Math.Min(height + 100, _originBitmap.Height - roiY);
-        OutputRoi = new List<int>
-        {
+        ];
+        int roiX = Math.Max(x - MFAExtensions.HorizontalExpansion / 2, 0); // 原代码中100/2=50
+        int roiY = Math.Max(y - MFAExtensions.VerticalExpansion / 2, 0);
+        int roiW = Math.Min(width + MFAExtensions.HorizontalExpansion, _originBitmap.Width - roiX);
+        int roiH = Math.Min(height + MFAExtensions.VerticalExpansion, _originBitmap.Height - roiY);
+        OutputRoi =
+        [
             roiX,
             roiY,
             roiW,
             roiH
-        };
+        ];
 
         try
         {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using HandyControl.Controls;
+using MFATools.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -13,8 +14,27 @@ namespace MFATools.Utils;
 
 public static class MFAExtensions
 {
-    public const double HorizontalExpansion = 100;
-    public const double VerticalExpansion = 100;
+    public static int _horizontalExpansion = DataSet.GetData("HorizontalExpansion", 100);
+    public static int _verticalExpansion = DataSet.GetData("VerticalExpansion", 100);
+    public static int HorizontalExpansion 
+    {
+        get => _horizontalExpansion;
+        set
+        {
+            _horizontalExpansion = value;
+            DataSet.SetData("HorizontalExpansion", value);
+        }
+    }
+    public static int VerticalExpansion 
+    {
+        get => _verticalExpansion;
+        set
+        {
+            _verticalExpansion = value;
+            DataSet.SetData("VerticalExpansion", value);
+        }
+    }
+    
     public static BitmapImage? BitmapToBitmapImage(Bitmap? bitmap)
     {
         if (bitmap == null)

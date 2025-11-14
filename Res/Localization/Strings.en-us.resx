@@ -479,4 +479,10 @@
     <data name="RelativePath" xml:space="preserve">
         <value>Relative path</value>
     </data>
+    <data name="XExpansion" xml:space="preserve">
+        <value>Horizontal ROI Expansion</value>
+    </data>
+    <data name="YExpansion" xml:space="preserve">
+        <value>Vertical ROI Expansion</value>
+    </data>
 </root>

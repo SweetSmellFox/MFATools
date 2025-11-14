@@ -38,6 +38,15 @@ public partial class ColorExtractionDialog
         set => _outputRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
 
+    private List<int>? _outputOriginRoi { get; set; }
+
+    public List<int>? OutputOriginRoi
+    {
+        get => _outputOriginRoi;
+        set => _outputOriginRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
+    }
+
+
     public List<int>? OutputUpper { get; set; }
     public List<int>? OutputLower { get; set; }
 
@@ -584,19 +593,25 @@ public partial class ColorExtractionDialog
         y = Math.Clamp(y, 0, _originBitmap.Height - 1);
         width = Math.Clamp(width, 1, _originBitmap.Width - x);
         height = Math.Clamp(height, 1, _originBitmap.Height - y);
-
+        OutputOriginRoi =
+        [
+            x,
+            y,
+            width,
+            height
+        ];
         // 计算扩展ROI
-        int roiX = Math.Max(x - 5, 0);
-        int roiY = Math.Max(y - 5, 0);
-        int roiW = Math.Min(width + 10, _originBitmap.Width - roiX);
-        int roiH = Math.Min(height + 10, _originBitmap.Height - roiY);
-        OutputRoi = new List<int>
-        {
+        int roiX = Math.Max(x - MFAExtensions.HorizontalExpansion / 2, 0);
+        int roiY = Math.Max(y - MFAExtensions.VerticalExpansion / 2, 0);
+        int roiW = Math.Min(width + MFAExtensions.HorizontalExpansion, _originBitmap.Width - roiX);
+        int roiH = Math.Min(height + MFAExtensions.HorizontalExpansion, _originBitmap.Height - roiY);
+        OutputRoi =
+        [
             roiX,
             roiY,
             roiW,
             roiH
-        };
+        ];
 
         // 使用已计算的颜色范围
         if (!_tempColorRange.HasValue)

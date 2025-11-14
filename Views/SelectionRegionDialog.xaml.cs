@@ -28,12 +28,12 @@ public partial class SelectionRegionDialog
     private Point _startPoint; // 起始像素坐标
 
     // 输出的ROI坐标（像素级）
-    private List<int>? _output { get; set; }
+    private List<int>? _outputOriginRoi { get; set; }
 
-    public List<int>? Output
+    public List<int>? OutputOriginRoi
     {
-        get => _output;
-        set => _output = value?.Select(i => i < 0 ? 1 : i).ToList();
+        get => _outputOriginRoi;
+        set => _outputOriginRoi = value?.Select(i => i < 0 ? 0 : i).ToList();
     }
 
     public bool IsRoi { get; set; }
@@ -108,7 +108,7 @@ public partial class SelectionRegionDialog
     private (int X, int Y) ScreenToPixel(Point screenPos)
     {
         // 关键：屏幕坐标 ÷ 缩放比例 = 实际像素坐标
-        int x = (int)Math.Ceiling(screenPos.X / _scale); 
+        int x = (int)Math.Ceiling(screenPos.X / _scale);
         int y = (int)Math.Ceiling(screenPos.Y / _scale);
         x = Math.Clamp(x, 0, (int)_originWidth);
         y = Math.Clamp(y, 0, (int)_originHeight);
@@ -330,13 +330,13 @@ public partial class SelectionRegionDialog
         width = Math.Clamp(width, 1, (int)_originWidth - x);
         height = Math.Clamp(height, 1, (int)_originHeight - y);
 
-        Output = new List<int>
-        {
+        _outputOriginRoi =
+        [
             x,
             y,
             width,
             height
-        };
+        ];
         IsRoi = SelectType.SelectedIndex == 0;
         DialogResult = true;
         Close();

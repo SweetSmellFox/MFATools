@@ -507,4 +507,10 @@
     <data name="RelativePath" xml:space="preserve">
         <value>相对路径</value>
     </data>
+    <data name="XExpansion" xml:space="preserve">
+        <value>水平ROI扩展</value>
+    </data>
+    <data name="YExpansion" xml:space="preserve">
+        <value>垂直ROI扩展</value>
+    </data>
 </root>

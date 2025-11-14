@@ -474,8 +474,8 @@ public partial class MainWindow
         if (selectionRegionDialog.ShowDialog() == true)
         {
             AppendLog(selectionRegionDialog.IsRoi
-                ? new Attribute("roi", selectionRegionDialog.Output)
-                : new Attribute("target", selectionRegionDialog.Output));
+                ? new Attribute("roi", selectionRegionDialog.OutputOriginRoi)
+                : new Attribute("target", selectionRegionDialog.OutputOriginRoi));
         }
     }
 
@@ -508,6 +508,7 @@ public partial class MainWindow
             AppendLog(new Attribute("upper", colorExtractionDialog.OutputUpper));
             AppendLog(new Attribute("lower", colorExtractionDialog.OutputLower));
             AppendLog(new Attribute("recommended roi", colorExtractionDialog.OutputRoi));
+            AppendLog(new Attribute("origin roi", colorExtractionDialog.OutputOriginRoi));
             switch (colorExtractionDialog.SelectType.SelectedIndex)
             {
                 case 0: AppendLog(new Attribute("method", 4)); break;
@@ -520,11 +521,12 @@ public partial class MainWindow
     private void RecognitionText(object sender, RoutedEventArgs e)
     {
         RecognitionTextDialog recognition = new RecognitionTextDialog();
-        if (recognition.ShowDialog() == true && recognition.Output != null)
+        if (recognition.ShowDialog() == true && recognition.OutputOriginRoi != null)
         {
             AppendLog(new Attribute("expected",
-                OCRHelper.ReadTextFromMAATasker(recognition.OutputBitmap, recognition.Output[0], recognition.Output[1],
-                    recognition.Output[2], recognition.Output[3])));
+                OCRHelper.ReadTextFromMAATasker(recognition.OutputBitmap, recognition.OutputOriginRoi[0], recognition.OutputOriginRoi[1],
+                    recognition.OutputOriginRoi[2], recognition.OutputOriginRoi[3])));
+            AppendLog(new Attribute("origin roi", recognition.OutputOriginRoi));
             AppendLog(new Attribute("recommended roi", recognition.OutputRoi));
         }
     }
