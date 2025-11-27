@@ -187,19 +187,18 @@ public partial class SelectionRegionDialog
         if (isCtrlKeyPressed)
         {
             Point mousePosition = e.GetPosition(image);
-            double scaleX = sfr.ScaleX;
-            double scaleY = sfr.ScaleY;
-
-            double factor = e.Delta > 0 ? ZoomFactor : 1 / ZoomFactor;
-            scaleX *= factor;
-            scaleY *= factor;
-
+            var oldScale = sfr.ScaleX;
+            double newScale = e.Delta > 0 ? oldScale * 1.1 : oldScale / 1.1;
+            newScale = Math.Max(newScale, 1);
+            newScale = Math.Round(newScale, 6); 
+            sfr.CenterX = mousePosition.X;
+            sfr.CenterY = mousePosition.Y;
             // 更新缩放比例
-            sfr.ScaleX = scaleX;
-            sfr.ScaleY = scaleY;
+            sfr.ScaleX = newScale;
+            sfr.ScaleY = newScale;
             RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
             // 检查边界
-            CheckZoomBounds(mousePosition, scaleX, scaleY);
+        
         }
     }
 

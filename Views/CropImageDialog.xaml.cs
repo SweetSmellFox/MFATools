@@ -172,7 +172,6 @@ public partial class CropImageDialog
 
         // 清除选择画布（原有逻辑保留）
         SelectionCanvas.Children.Clear();
-        _selectionRectangle = null;
     }
 
     private void CenterWindow()
@@ -190,44 +189,43 @@ public partial class CropImageDialog
         if (isCtrlKeyPressed)
         {
             Point mousePosition = e.GetPosition(image);
-            double scaleX = sfr.ScaleX;
-            double scaleY = sfr.ScaleY;
-
-            double factor = e.Delta > 0 ? ZoomFactor : 1 / ZoomFactor;
-            scaleX *= factor;
-            scaleY *= factor;
-
+            var oldScale = sfr.ScaleX;
+            double newScale = e.Delta > 0 ? oldScale * 1.1 : oldScale / 1.1;
+            newScale = Math.Max(newScale, 1);
+            newScale = Math.Round(newScale, 6); 
+            sfr.CenterX = mousePosition.X;
+            sfr.CenterY = mousePosition.Y;
             // 更新缩放比例
-            sfr.ScaleX = scaleX;
-            sfr.ScaleY = scaleY;
+            sfr.ScaleX = newScale;
+            sfr.ScaleY = newScale;
             RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
             // 检查边界
-            CheckZoomBounds(mousePosition, scaleX, scaleY);
+        
         }
     }
-    private void CheckZoomBounds(Point mousePosition, double scaleX, double scaleY)
-    {
-        double imageWidth = image.ActualWidth;
-        double imageHeight = image.ActualHeight;
-
-        if (mousePosition.X >= 0 && mousePosition.X <= imageWidth)
-        {
-            sfr.CenterX = mousePosition.X;
-        }
-        else
-        {
-            sfr.CenterX = imageWidth;
-        }
-
-        if (mousePosition.Y >= 0 && mousePosition.Y <= imageHeight)
-        {
-            sfr.CenterY = mousePosition.Y;
-        }
-        else
-        {
-            sfr.CenterY = imageHeight;
-        }
-    }
+    // private void CheckZoomBounds(Point mousePosition, double scaleX, double scaleY)
+    // {
+    //     double imageWidth = image.ActualWidth;
+    //     double imageHeight = image.ActualHeight;
+    //
+    //     if (mousePosition.X >= 0 && mousePosition.X <= imageWidth)
+    //     {
+    //         sfr.CenterX = mousePosition.X;
+    //     }
+    //     else
+    //     {
+    //         sfr.CenterX = imageWidth;
+    //     }
+    //
+    //     if (mousePosition.Y >= 0 && mousePosition.Y <= imageHeight)
+    //     {
+    //         sfr.CenterY = mousePosition.Y;
+    //     }
+    //     else
+    //     {
+    //         sfr.CenterY = imageHeight;
+    //     }
+    // }
 
     // 鼠标按下（开始绘制矩形或拖动）
     private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
@@ -416,7 +414,6 @@ public partial class CropImageDialog
                 // 替换原始图像
                 _displayWriteableBitmap = null;
                 SelectionCanvas.Children.Clear();
-                _selectionRectangle = null;
                 _originBitmap?.Dispose();
                 _originBitmap = new Bitmap(openFileDialog.FileName);
                 _currentRect = null;
@@ -430,72 +427,8 @@ public partial class CropImageDialog
             }
         }
     }
-    private System.Windows.Shapes.Rectangle? _selectionRectangle; // 画布上的选择矩形
-    // 绘制矩形（统一缩放与边界处理）
-    public ScaleTransform? ScaleTransform;
-    public TranslateTransform? TranslateTransform;
-    public TransformGroup? Group;
-    // 绘制矩形（统一缩放处理）
-    public void DrawRectangle(int x, int y, int width, int height)
-    {
-        // 像素坐标边界检查
-        x = Math.Clamp(x, 0, (int)_originWidth - 1);
-        y = Math.Clamp(y, 0, (int)_originHeight - 1);
-        width = Math.Clamp(width, 1, (int)_originWidth - x) + 1;
-        height = Math.Clamp(height, 1, (int)_originHeight - y) + 1;
-        Group ??= new TransformGroup();
-        if (ScaleTransform == null)
-        {
-            ScaleTransform = new ScaleTransform(_scale, _scale);
-            Group.Children.Add(ScaleTransform);
-        }
-        else
-        {
-            ScaleTransform.ScaleX = _scale;
-            ScaleTransform.ScaleY = _scale;
-        }
-        if (TranslateTransform == null)
-        {
-            TranslateTransform = new TranslateTransform(x - 1, y - 1);
-            Group.Children.Add(TranslateTransform);
-        }
-        else
-        {
-            TranslateTransform.X = x - 1;
-            TranslateTransform.Y = y - 1;
-        }
 
-        // 清除之前的矩形
-        if (_selectionRectangle == null)
-        {
-            _selectionRectangle = new System.Windows.Shapes.Rectangle
-            {
-                Stroke = SettingDialog.DefaultLineColor,
-                StrokeThickness = SettingDialog.DefaultLineThickness,
-                StrokeDashArray =
-                {
-                    2,
-                    2
-                },
-                Width = width,
-                Height = height,
-                RenderTransform = Group
-
-            };
-            SelectionCanvas.Children.Add(_selectionRectangle);
-        }
-        else
-        {
-            _selectionRectangle.Width = width;
-            _selectionRectangle.Height = height;
-        }
-        // SelectionCanvas.Children.Remove(_selectionRectangle);
-
-        // 创建矩形（保持样式一致）
-
-
-    }
-
+    
     // 编辑矩形（通过对话框输入坐标）
     private void Edit(object sender, RoutedEventArgs e)
     {

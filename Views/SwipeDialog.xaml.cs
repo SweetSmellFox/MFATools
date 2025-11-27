@@ -98,20 +98,19 @@ public partial class SwipeDialog
         var isCtrlKeyPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
         if (isCtrlKeyPressed)
         {
-            Point mousePosition = e.GetPosition(SelectionCanvas);
-            double scaleX = sfr.ScaleX;
-            double scaleY = sfr.ScaleY;
-
-            double factor = e.Delta > 0 ? ZoomFactor : 1 / ZoomFactor;
-            scaleX *= factor;
-            scaleY *= factor;
-
+            Point mousePosition = e.GetPosition(image);
+            var oldScale = sfr.ScaleX;
+            double newScale = e.Delta > 0 ? oldScale * 1.1 : oldScale / 1.1;
+            newScale = Math.Max(newScale, 1);
+            newScale = Math.Round(newScale, 6); 
+            sfr.CenterX = mousePosition.X;
+            sfr.CenterY = mousePosition.Y;
             // 更新缩放比例
-            sfr.ScaleX = scaleX;
-            sfr.ScaleY = scaleY;
+            sfr.ScaleX = newScale;
+            sfr.ScaleY = newScale;
             RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.NearestNeighbor);
             // 检查边界
-            CheckZoomBounds(mousePosition, scaleX, scaleY);
+        
         }
     }
 
