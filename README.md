@@ -1,4 +1,9 @@
 # MFATools
+
+## 注意
+
+- 该项目已迁移至[MFAToolsPlus](https://github.com/SweetSmellFox/MFAToolsPlus)
+
 ## 基本介绍
 
 - 本项目是一个基于WPF框架开发的工具界面，旨在提供类似于截图工具的功能
